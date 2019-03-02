@@ -16,18 +16,18 @@ class User(models.Model):
 class Message(models.Model):
     msg_ID = models.AutoField("信息唯一标识符", primary_key = True)
     pos_x = models.FloatField()
-    pox_y = models.FloatField()
+    pos_y = models.FloatField()
     title = models.CharField("标题", max_length = 64, null = False)
     content = models.TextField("内容")
     img = models.TextField("照片名")
     author = models.IntegerField("作者")
-    like = models.IntegerField("点赞数")
-    dislike = models.IntegerField("点踩数")
-    who_like = models.TextField("点赞用户")
-    who_dislike = models.TextField("点踩用户")
+    like = models.IntegerField("点赞数", default = 0)
+    dislike = models.IntegerField("点踩数", default = 0)
+    who_like = models.TextField("点赞用户", default = '[]')
+    who_dislike = models.TextField("点踩用户", default = '[]')
     add_date = models.DateTimeField('保存日期',default = timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
-    comments = models.TextField("评论")
+    comments = models.TextField("评论id")
 
 class Comment(models.Model):
     comment_ID = models.AutoField("评论唯一标识符", primary_key = True)
@@ -35,8 +35,8 @@ class Comment(models.Model):
     user_ID = models.IntegerField("评论用户唯一标识符")
     content = models.TextField("评论内容")
     img = models.ImageField("评论图片", upload_to = "command_img")
-    like = models.IntegerField("点赞数")
-    who_dislike = models.TextField("点踩用户")
+    like = models.IntegerField("点赞数", default = 0)
+    who_dislike = models.TextField("点踩用户", default = '[]')
 
 
 
