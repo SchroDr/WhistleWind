@@ -31,12 +31,12 @@ class Message(models.Model):
 
 class Comment(models.Model):
     comment_ID = models.AutoField("评论唯一标识符", primary_key = True)
-    msg_ID = models.IntegerField("所评论信息唯一标识符")
-    user_ID = models.IntegerField("评论用户唯一标识符")
-    content = models.TextField("评论内容")
+    msg_ID = models.IntegerField("所评论信息唯一标识符", default = 0)
+    user_ID = models.IntegerField("评论用户唯一标识符", default = 0)
+    content = models.TextField("评论内容", default = 'Content')
     img = models.ImageField("评论图片", upload_to = "command_img")
-    like = models.IntegerField("点赞数")
-    who_dislike = models.TextField("点踩用户")
+    like = models.IntegerField("点赞数", default = 0)
+    who_dislike = models.TextField("点踩用户", default = '[]')
 
 
 
