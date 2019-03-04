@@ -3,10 +3,10 @@ import django.utils.timezone as timezone
 
 class User(models.Model):
     unique_ID = models.AutoField("用户唯一标识符", primary_key = True)
-    email = models.CharField("email", max_length = 32, null = False)
-    user_name = models.CharField("用户名", max_length = 32, null = False)
-    password = models.CharField("密码", max_length = 32, null = False)
-    avatar_name = models.ImageField("头像存储名", upload_to = "avatars", null = False)
+    email = models.CharField("email", max_length = 32, null = False, default = "")
+    user_name = models.CharField("用户名", max_length = 32, null = False, default = "user")
+    password = models.CharField("密码", max_length = 32, null = False, default = "000000")
+    avatar_name = models.ImageField("头像存储名", upload_to = "avatars", null = False, default = "rua.jpg")
     follows = models.TextField("关注用户", default = '[]')
     fans = models.TextField("粉丝", default = '[]')
     msgs = models.TextField("所发推文", default = '[]')
