@@ -19,7 +19,7 @@ class Message(models.Model):
     pox_y = models.FloatField(default = 0)
     title = models.CharField("标题", max_length = 64, null = False, default = "Title")
     content = models.TextField("内容", default = "Content")
-    img = models.TextField("照片名",, default = "Pic")
+    img = models.TextField("照片名", default = "Pic")
     author = models.IntegerField("作者", default = 0)
     like = models.IntegerField("点赞数", default = 0)
     dislike = models.IntegerField("点踩数", default = 0)
