@@ -25,7 +25,7 @@ SECRET_KEY = 'lf3m2gaw8%!#nd^0+3s4&==-*=!qd@i!ab$jkzwt^8+nn-leq!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lastation.me', 'www.lastation.me', 'localhost', '127.0.0.1', ]
 
 
 # Application definition
@@ -89,7 +89,7 @@ DATABASES = {
         'NAME': 'WW',
         'HOST': 'localhost',
         'PORT': '3306',
-        'USER': 'root',
+        'USER': 'ww',
         'PASSWORD': 'mysql',
     }
 }
