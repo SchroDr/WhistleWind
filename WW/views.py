@@ -29,7 +29,7 @@ def register(request):
         'isExist': 0
     }
     email = request.POST.get('email')
-    username = request.POST.get('username')
+    #username = request.POST.get('username')
     password = request.POST.get('password')
     user = models.User.objects.filter(email = email)
     if len(user) == 1:
