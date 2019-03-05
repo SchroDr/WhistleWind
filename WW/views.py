@@ -130,12 +130,13 @@ def postInfo(request):
     content = request.POST.get('content')
     images = request.FILES.get('image')
     images_names = []
-    for f in images:
-        destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
-        for chunk in f.chuncks():
-            destination.write(chunk)
-        destination.close()
-        images_names.append(f.name)
+    if images != None:
+        for f in images:
+            destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
+            for chunk in f.chuncks():
+                destination.write(chunk)
+            destination.close()
+            images_names.append(f.name)
 
     pos_x = request.POST.get('x')
     pos_y = request.POST.get('y')
