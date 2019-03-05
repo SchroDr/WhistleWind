@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'^getMsgInfo/$', views.getMsgInfo, name = 'getMsgInfo'),
     url(r'^getComtInfo/$', views.getComtInfo, name = 'getComtInfo'),
     url(r'^giveALike/$', views.giveALike, name = 'giveALike'),
-    url(r'^giveADisLike', views.giveADisLike, name = 'giveADisLike')
+    url(r'^giveADisLike', views.giveADisLike, name = 'giveADisLike'),
+    url(r'^postInfo/$', views.postInfo, name = 'postInfo')
 ]

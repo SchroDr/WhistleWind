@@ -123,3 +123,21 @@ def giveADisLike(request):
     who_dislike = json.loads(message.who_dislike)
     who_dislike.append(user.unique_ID)
     message.who_dislike = json.dumps(who_dislike)
+
+def postInfo(request):
+    userID = request.POST.get('userID')
+    content = request.POST.get('content')
+    #image = request.FILES.get('images')
+
+    pos_x = request.POST.get('x')
+    pos_y = request.POST.get('y')
+    mention = request.POST.get('mention')
+    models.Message.objects.create(pos_x = pos_x, pos_y = pos_y, content = content, author = userID)
+    result = {
+        'isSucceed': 1
+    }
+    return JsonResponse(result)
+
+def postComt(request):
+    msgId = request.POST.get('msgId')
+    #userID = request
