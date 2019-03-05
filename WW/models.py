@@ -37,6 +37,7 @@ class Comment(models.Model):
     img = models.ImageField("评论图片", upload_to = "command_img")
     like = models.IntegerField("点赞数", default = 0)
     who_dislike = models.TextField("点踩用户", default = '[]')
-
+    add_date = models.DateTimeField('保存日期',default = timezone.now)
+    mod_date = models.DateTimeField('最后修改日期', auto_now = True)
 
 

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from . import models
+import json
 
 def login(request):
     result = {
@@ -82,19 +83,43 @@ def getMsgInfo(request):
         'imgUrl': message.img,
         'comments': message.comments        
     }
+    return JsonResponse(result)
 
 def getComtInfo(request):
     result = {
         'name': '',
         'headerImgUrl': '',
-
+        'time': '',
+        'content': '',
+        'imgUrl': '',
+        'like': ''
     }
     comment_ID = request.POST.get('commentsId')
     comment = models.Comment.objects.filter(comment_ID = comment_ID)
+    user = models.User.objects.get(unique_ID = comment.user_ID)
     if len(comment_ID) != 1:
         return 0
+    result['name'] = user.user_name
+    result['headerImgUrl'] = user.avatar_name
+    result['time'] = comment.add_date
+    result['content'] = comment.content 
+    result['imgUrl'] = comment.img 
+    result['like'] = comment.like
+    return JsonResponse(result)
 
 
 def giveALike(request):
     message = models.Message.objects.get(msg_ID = request.POST.get('msgId'))
     user = models.User.objects.get(unique_ID = request.POST.get('userId'))
+    message.like += 1
+    who_like = json.loads(message.who_like)
+    who_like.append(user.unique_ID)
+    message.who_like = json.dumps(who_like)
+
+def giveADisLike(request):
+    message = models.Message.objects.get(msg_ID = request.POST.get('msgId'))
+    user = models.User.objects.get(unique_ID = request.POST.get('userId'))
+    message.dislike += 1
+    who_dislike = json.loads(message.who_dislike)
+    who_dislike.append(user.unique_ID)
+    message.who_dislike = json.dumps(who_dislike)
