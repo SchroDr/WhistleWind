@@ -72,7 +72,7 @@ def getMessages(request):
     return JsonResponse(result, safe = False)
 
 def getMsgInfo(request):
-    message = models.Message.objectes.get(msg_ID = request.POST.get('msgID'))
+    message = models.Message.objects.get(msg_ID = request.POST.get('msgID'))
     author = models.User.objects.get(unique_ID = message.author)
     result = {
         'name': author.user_name,
