@@ -35,7 +35,7 @@ def register(request):
     if len(user) == 1:
         result['isExit'] = 1
         return JsonResponse(result)
-    user = models.User.objects.create(email = email, user_name = username, password = password)
+    user = models.User.objects.create(email = email, password = password)
     result['isSucceed'] = 1
     return JsonResponse(result)
 
