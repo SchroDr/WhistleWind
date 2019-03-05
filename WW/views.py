@@ -55,11 +55,11 @@ def getMessages(request):
         'y': ''
     }
     result = []
-    x = request.POST.get('x')
-    y = request.POST.get('y')
-    zoom = request.POST.get('zoom')
-    width = request.POST.get('width')
-    height = request.POST.get('height')
+    x = int(request.POST.get('x'))
+    y = int(request.POST.get('y'))
+    zoom = int(request.POST.get('zoom'))
+    width = int(request.POST.get('width'))
+    height = int(request.POST.get('height'))
     messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-width, pos_y__lte = y+width)    
     for message in messages:
         one_result['title'] = message.title
