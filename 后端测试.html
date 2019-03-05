@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>后端测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+</head>
+
+
+<body>
+    <ul> 
+	<p>==================================================================</p>
+        <p>注册</p>
+        <form action="http://lastation.me:8000/ww/register/" method="POST">
+            email: <input type="text" name="email"><br>
+            password: <input type="text" name="password"><br>
+            <input type="submit">
+   </ul>
+   
+   
+   <ul>
+	<p>==================================================================</p>
+
+        <p>登录</p>
+        <form action="" method="POST">
+                email: <input type="text" name="email"><br>
+                password: <input type="text" name="password"><br>
+                <input type="submit">
+        </form>
+    </ul>
+        
+	<ul>
+		<p>==================================================================</p>
+
+        <p>获取信息</p>
+        <form action="" method="POST">
+                x-axis	: <input type="text" name="x-axis"><br>
+                y-axis: <input type="text" name="y-axis"><br>
+				zoom	: <input type="text" name="zoom"><br>
+                width: <input type="text" name="width"><br>
+				height	: <input type="text" name="height"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>打开信息详情</p>
+        <form action="" method="POST">
+                msgId: <input type="text" name="msgId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>打开评论</p>
+        <form action="" method="POST">
+                commentsId: <input type="text" name="commentsId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>点赞</p>
+        <form action="" method="POST">
+                msgId: <input type="text" name="msgId"><br>
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>点赞</p>
+        <form action="" method="POST">
+                msgId: <input type="text" name="msgId"><br>
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>转发</p>
+        <form action="" method="POST">
+                msgId: <input type="text" name="msgId"><br>
+                userId: <input type="text" name="userId"><br>
+				x-axis: <input type="text" name="x-axis"><br>
+                y-axis: <input type="text" name="y-axis"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>发表评论</p>
+        <form action="" method="POST">
+                msgId: <input type="text" name="msgId"><br>
+                userId: <input type="text" name="userId"><br>
+				content: <input type="text" name="content"><br>
+                img: <input type="text" name="img"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>发布信息</p>
+        <form action="" method="POST">
+                content: <input type="text" name="content"><br>
+                userId: <input type="text" name="userId"><br>
+				img: <input type="text" name="img"><br>
+				x-axis: <input type="text" name="x-axis"><br>
+                y-axis: <input type="text" name="y-axis"><br>
+                mention: <input type="text" name="mention"><br>
+				
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>打开用户详情页</p>
+        <form action="" method="POST">
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>获取通知(现阶段主要是看有没有被@)</p>
+        <form action="" method="POST">
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>关注</p>
+        <form action="" method="POST">
+                targetUserId: <input type="text" name="targetUserId"><br>
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>取消关注</p>
+        <form action="" method="POST">
+                targetUserId: <input type="text" name="targetUserId"><br>
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>获取好友列表</p>
+        <form action="" method="POST">
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	
+	<ul>
+		<p>==================================================================</p>
+
+        <p>设置简介</p>
+        <form action="" method="POST">
+                userID: <input type="text" name="userID"><br>
+                summary: <input type="text" name="summary"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+	
+	<ul>
+		<p>==================================================================</p>
+	
+        <p>评论点赞</p>
+        <form action="" method="POST">
+                commentId: <input type="text" name="commentId"><br>
+                userId: <input type="text" name="userId"><br>
+                <input type="submit">
+        </form>
+    </ul>
+	
+		
+</body>
+</html>
