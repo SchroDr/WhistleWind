@@ -16,7 +16,7 @@ class User(models.Model):
 class Message(models.Model):
     msg_ID = models.AutoField("信息唯一标识符", primary_key = True)
     pos_x = models.FloatField(default = 0)
-    pox_y = models.FloatField(default = 0)
+    pos_y = models.FloatField(default = 0)
     title = models.CharField("标题", max_length = 64, null = False, default = "Title")
     content = models.TextField("内容", default = "Content")
     img = models.TextField("照片名", default = "Pic")
