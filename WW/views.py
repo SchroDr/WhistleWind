@@ -29,13 +29,13 @@ def register(request):
         'isExist': 0
     }
     email = request.POST.get('email')
-    username = request.POST.get('username')
+    #username = request.POST.get('username')
     password = request.POST.get('password')
     user = models.User.objects.filter(email = email)
     if len(user) == 1:
         result['isExit'] = 1
         return JsonResponse(result)
-    user = models.User.objects.create(email = email, user_name = username, password = password)
+    user = models.User.objects.create(email = email, password = password)
     result['isSucceed'] = 1
     return JsonResponse(result)
 
