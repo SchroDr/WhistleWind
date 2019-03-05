@@ -36,7 +36,7 @@
 		<p>==================================================================</p>
 
         <p>获取信息</p>
-        <form action="" method="POST">
+        <form action="lastation.me:8000/ww/getMsgInfo/" method="POST">
                 x-axis	: <input type="text" name="x-axis"><br>
                 y-axis: <input type="text" name="y-axis"><br>
 				zoom	: <input type="text" name="zoom"><br>
@@ -121,12 +121,12 @@
 		<p>==================================================================</p>
 
         <p>发布信息</p>
-        <form action="" method="POST">
+        <form action="http://lastation.me:8000/ww/postInfo/" method="POST" enctype="multipart/form-data">
                 content: <input type="text" name="content"><br>
-                userId: <input type="text" name="userId"><br>
-				img: <input type="text" name="img"><br>
-				x-axis: <input type="text" name="x-axis"><br>
-                y-axis: <input type="text" name="y-axis"><br>
+                userId: <input type="text" name="userID"><br>
+				img: <input type="file" name="img"><br>
+				x-axis: <input type="text" name="x"><br>
+                y-axis: <input type="text" name="y"><br>
                 mention: <input type="text" name="mention"><br>
 				
                 <input type="submit">
