@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from . import models
 import json
+import os
 
 def login(request):
     result = {
@@ -127,12 +128,19 @@ def giveADisLike(request):
 def postInfo(request):
     userID = request.POST.get('userID')
     content = request.POST.get('content')
-    #image = request.FILES.get('images')
+    images = request.FILES.get('image')
+    images_names = []
+    for f in images:
+        destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
+        for chunk in f.chuncks():
+            destination.write(chunk)
+        destination.close()
+        images_names.append(f.name)
 
     pos_x = request.POST.get('x')
     pos_y = request.POST.get('y')
     mention = request.POST.get('mention')
-    models.Message.objects.create(pos_x = pos_x, pos_y = pos_y, content = content, author = userID)
+    models.Message.objects.create(pos_x = pos_x, pos_y = pos_y, content = content, author = userID, img = json.dumps(images_names))
     result = {
         'isSucceed': 1
     }
