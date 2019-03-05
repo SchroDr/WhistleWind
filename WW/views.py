@@ -13,7 +13,7 @@ def login(request):
     password = request.POST.get('password')
     user = models.User.objects.filter(email = email)
     if len(user) == 0:
-        result['isNotExit'] = 1
+        result['isNotExist'] = 1
         result['userId'] = ""
         return JsonResponse(result)
     if user[0].password == password:
@@ -28,10 +28,13 @@ def register(request):
         'isSucceed': 0,
         'isExist': 0
     }
+    print(request)
     email = request.POST.get('email')
+    print(email)
     #username = request.POST.get('username')
     password = request.POST.get('password')
     user = models.User.objects.filter(email = email)
+    print(len(user))
     if len(user) == 1:
         result['isExit'] = 1
         return JsonResponse(result)
@@ -79,6 +82,18 @@ def getMsgInfo(request):
         'imgUrl': message.img,
         'comments': message.comments        
     }
+
+def getComtInfo(request):
+    result = {
+        'name': '',
+        'headerImgUrl': '',
+
+    }
+    comment_ID = request.POST.get('commentsId')
+    comment = models.Comment.objects.filter(comment_ID = comment_ID)
+    if len(comment_ID) != 1:
+        return 0
+
 
 def giveALike(request):
     message = models.Message.objects.get(msg_ID = request.POST.get('msgId'))
