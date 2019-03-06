@@ -1,8 +1,7 @@
 import json
 import os
+from django.http import JsonResponse, FileResponse
 from . import models
-from django.shortcuts import render
-from django.http import JsonResponse
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
@@ -200,3 +199,33 @@ def appendTo(temp, key, added_one):
     temp_line.append(added_one)
 
     temp = temp_line
+
+def getPic(request):
+    url = request.POST.get('image_url')
+    url = os.path.join(PROJECT_ROOT, url)
+    return FileResponse(open(url, 'rb'))
+
+def userInfo(request):
+    pass 
+
+def getNotifct(request):
+    pass
+
+def follow(request):
+    pass
+
+def unfollow(request):
+    pass 
+
+def getFriendsList(request):
+    pass
+
+def setAvatar(request):
+    pass
+
+def setIntro(request):
+    pass    
+
+def giveALikeToComt(request):
+    pass
+
