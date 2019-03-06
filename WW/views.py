@@ -82,12 +82,12 @@ def getMsgInfo(request):
     author = models.User.objects.get(unique_ID = message.author)
     result = {
         'name': author.user_name,
-        'userID': author.unique_ID,
+        'userID': author.unique_ID.url,
         'headerImgUrl': author.avatar_name,
         'like': message.like,
         'dislike': message.dislike,
         'time': message.add_date,
-        'imgUrl': message.img.url,
+        'imgUrl': message.img,
         'comments': message.comments        
     }
     return JsonResponse(result)

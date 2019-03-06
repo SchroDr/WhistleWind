@@ -14,6 +14,9 @@ class User(models.Model):
     friends = models.TextField("好友", default = '[]')
     introductino = models.TextField("简介", default = 'Hello, World')
 
+    def __str__(self):
+        return self.unique_ID
+
 class Message(models.Model):
     msg_ID = models.AutoField("信息唯一标识符", primary_key = True)
     pos_x = models.FloatField(default = 0)
@@ -30,6 +33,9 @@ class Message(models.Model):
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
     comments = models.TextField("评论", default = '[]')
 
+    def __str__(self):
+        return self.msg_ID
+
 class Comment(models.Model):
     comment_ID = models.AutoField("评论唯一标识符", primary_key = True)
     msg_ID = models.IntegerField("所评论信息唯一标识符", default = 0)
@@ -40,5 +46,8 @@ class Comment(models.Model):
     who_like = models.TextField("点赞用户", default = '[]')
     add_date = models.DateTimeField('保存日期',default = timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
+
+    def __str__(self):
+        return self.comment_ID
 
 
