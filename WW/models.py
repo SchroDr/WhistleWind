@@ -15,7 +15,7 @@ class User(models.Model):
     introductino = models.TextField("简介", default = 'Hello, World')
 
     def __str__(self):
-        return self.unique_ID
+        return str(self.unique_ID)
 
 class Message(models.Model):
     msg_ID = models.AutoField("信息唯一标识符", primary_key = True)
@@ -34,7 +34,7 @@ class Message(models.Model):
     comments = models.TextField("评论", default = '[]')
 
     def __str__(self):
-        return self.msg_ID
+        return str(self.msg_ID)
 
 class Comment(models.Model):
     comment_ID = models.AutoField("评论唯一标识符", primary_key = True)
@@ -48,6 +48,6 @@ class Comment(models.Model):
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
 
     def __str__(self):
-        return self.comment_ID
+        return str(self.comment_ID)
 
 
