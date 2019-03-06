@@ -1,8 +1,12 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from . import models
 import json
 import os
+from . import models
+from django.shortcuts import render
+from django.http import JsonResponse
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
+
 
 def login(request):
     result = {
@@ -46,22 +50,22 @@ def register(request):
 
 
 def getMessages(request):
-    one_result = {
-        'title': '',
-        'content': '',
-        'img': {},
-        'msgId': '',
-        'x': '',
-        'y': ''
-    }
     result = []
     x = int(request.POST.get('x'))
     y = int(request.POST.get('y'))
     zoom = int(request.POST.get('zoom'))
     width = int(request.POST.get('width'))
     height = int(request.POST.get('height'))
-    messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-width, pos_y__lte = y+width)    
+    messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-height, pos_y__lte = y+height)    
     for message in messages:
+        one_result = {
+            'title': '',
+            'content': '',
+            'img': {},
+            'msgId': '',
+            'x': '',
+            'y': ''
+        }
         one_result['title'] = message.title
         one_result['content'] = message.content 
         one_result['img'] = message.img 
@@ -70,6 +74,7 @@ def getMessages(request):
         one_result['y'] = message.pos_y
         result.append(one_result)
     return JsonResponse(result, safe = False)
+
 
 def getMsgInfo(request):
     message = models.Message.objects.get(msg_ID = request.POST.get('msgID'))
@@ -125,18 +130,35 @@ def giveADisLike(request):
     who_dislike.append(user.unique_ID)
     message.who_dislike = json.dumps(who_dislike)
 
+def saveImg(image):
+    if image is not None:
+        with open(os.path.join(MEDIA_ROOT, image.name), 'wb') as f:
+            for chunk in image.chunks(chunk_size = 1024):
+                f.write(chunk)
+        return image.name
+    else:
+        return None
+
 def postInfo(request):
     userID = request.POST.get('userID')
     content = request.POST.get('content')
-    images = request.FILES.get('image')
+    images = request.FILES.get('img')
     images_names = []
-    if images != None:
-        for f in images:
-            destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
-            for chunk in f.chuncks():
-                destination.write(chunk)
-            destination.close()
+    if images is not None:
+        with open(os.path.join(MEDIA_ROOT, images.name), 'wb') as f:
+            for chunk in images.chunks(chunk_size = 1024):
+                f.write(chunk)
             images_names.append(f.name)
+            print(f.name)
+
+    """
+    for f in images:
+        destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
+        for chunk in f.chuncks():
+            destination.write(chunk)
+        destination.close()
+        images_names.append(f.name)
+    """
 
     pos_x = request.POST.get('x')
     pos_y = request.POST.get('y')
@@ -148,5 +170,31 @@ def postInfo(request):
     return JsonResponse(result)
 
 def postComt(request):
-    msgId = request.POST.get('msgId')
-    #userID = request
+    try:
+        msgId = request.POST.get('msgId')
+        userID = request.POST.get('userID')
+        content = request.POST.get('content')
+        img = request.FILES.get('img')
+        image_name = saveImg(img)
+
+        user = models.User.objects.get(unique_ID = userID)
+        msg = models.Message.objects.get(msg_ID = msgId)
+        comment = models.Comment.objects.create(msg_ID = msgId, userID = userID, content = content, img = image_name)
+
+        user_comments = json.loads(user.comments)
+        user_comments.append(comment.comment_ID)
+        user.comments = user_comments
+        user.save()
+
+        msg_comments = json.loads(msg.comments)
+        msg_comments.append(comment.comment_ID)
+        msg.comments = user_comments
+        msg.save()
+        return JsonResponse({'isSucceed': 1})
+    except:
+        return JsonResponse({'isSucceed': 0})
+
+def appendTo(temp, added_one):
+    temp_line = json.loads(temp)
+    temp_line.append(added_one)
+    temp = temp_line

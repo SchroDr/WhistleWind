@@ -14,11 +14,10 @@
     <ul> 
 	<p>==================================================================</p>
         <p>注册</p>
-        <form action="http://localhost:8000/ww/register/" method="post">
+        <form action="http://localhost:8000/ww/register/" method="POST">
             email: <input type="text" name="email"><br>
             password: <input type="text" name="password"><br>
             <input type="submit">
-        </form>
    </ul>
    
    
@@ -37,7 +36,7 @@
 		<p>==================================================================</p>
 
         <p>获取信息</p>
-        <form action="" method="POST">
+        <form action="localhost:8000/ww/getMsgInfo/" method="POST">
                 x-axis	: <input type="text" name="x-axis"><br>
                 y-axis: <input type="text" name="y-axis"><br>
 				zoom	: <input type="text" name="zoom"><br>
@@ -122,12 +121,12 @@
 		<p>==================================================================</p>
 
         <p>发布信息</p>
-        <form action="" method="POST">
+        <form action="http://localhost:8000/ww/postInfo/" method="POST" enctype="multipart/form-data">
                 content: <input type="text" name="content"><br>
-                userId: <input type="text" name="userId"><br>
-				img: <input type="text" name="img"><br>
-				x-axis: <input type="text" name="x-axis"><br>
-                y-axis: <input type="text" name="y-axis"><br>
+                userId: <input type="text" name="userID"><br>
+				img: <input type="file" name="img"><br>
+				x-axis: <input type="text" name="x"><br>
+                y-axis: <input type="text" name="y"><br>
                 mention: <input type="text" name="mention"><br>
 				
                 <input type="submit">
@@ -211,10 +210,5 @@
     </ul>
 	
 		
-        <form action="http://localhost:8000/ww/register/" method="post">
-  First name: <input type="text" name="email"><br>
-  Last name: <input type="text" name="password"><br>
-  <input type="submit" value="提交">
-</form>
 </body>
 </html>

@@ -10,6 +10,7 @@ class User(models.Model):
     follows = models.TextField("关注用户", default = '[]')
     fans = models.TextField("粉丝", default = '[]')
     msgs = models.TextField("所发推文", default = '[]')
+    comments = models.TextField("所发评论", default = '[]')
     friends = models.TextField("好友", default = '[]')
     introductino = models.TextField("简介", default = 'Hello, World')
 
@@ -25,7 +26,7 @@ class Message(models.Model):
     dislike = models.IntegerField("点踩数", default = 0)
     who_like = models.TextField("点赞用户", default = '[]')
     who_dislike = models.TextField("点踩用户", default = '[]')
-    add_date = models.DateTimeField('保存日期',default = timezone.now)
+    add_date = models.DateTimeField('保存日期', default = timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
     comments = models.TextField("评论", default = '[]')
 
@@ -34,9 +35,9 @@ class Comment(models.Model):
     msg_ID = models.IntegerField("所评论信息唯一标识符", default = 0)
     user_ID = models.IntegerField("评论用户唯一标识符", default = 0)
     content = models.TextField("评论内容", default = 'Content')
-    img = models.ImageField("评论图片", upload_to = "command_img")
+    img = models.ImageField("评论图片", upload_to = "command_img", null = True)
     like = models.IntegerField("点赞数", default = 0)
-    who_dislike = models.TextField("点踩用户", default = '[]')
+    who_like = models.TextField("点赞用户", default = '[]')
     add_date = models.DateTimeField('保存日期',default = timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
 
