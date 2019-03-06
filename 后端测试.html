@@ -18,6 +18,7 @@
             email: <input type="text" name="email"><br>
             password: <input type="text" name="password"><br>
             <input type="submit">
+        </form>
    </ul>
    
    
@@ -36,9 +37,9 @@
 		<p>==================================================================</p>
 
         <p>获取信息</p>
-        <form action="lastation.me:8000/ww/getMsgInfo/" method="POST">
-                x-axis	: <input type="text" name="x-axis"><br>
-                y-axis: <input type="text" name="y-axis"><br>
+        <form action="http://lastation.me:8000/ww/getMessages/" method="POST">
+                x-axis	: <input type="text" name="x"><br>
+                y-axis: <input type="text" name="y"><br>
 				zoom	: <input type="text" name="zoom"><br>
                 width: <input type="text" name="width"><br>
 				height	: <input type="text" name="height"><br>
