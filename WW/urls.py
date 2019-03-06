@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^getComtInfo/$', views.getComtInfo, name = 'getComtInfo'),
     url(r'^giveALike/$', views.giveALike, name = 'giveALike'),
     url(r'^giveADisLike', views.giveADisLike, name = 'giveADisLike'),
-    url(r'^postInfo/$', views.postInfo, name = 'postInfo')
+    url(r'^postInfo/$', views.postInfo, name = 'postInfo'),
+    url(r'^getPic/$', views.getPic, name = 'getPic'),
 ]
