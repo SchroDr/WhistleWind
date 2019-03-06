@@ -201,7 +201,7 @@ def appendTo(temp, key, added_one):
     temp = temp_line
 
 def getPic(request):
-    url = request.POST.get('image_url')
+    url = request.GET.get('image_url')
     url = os.path.join(PROJECT_ROOT, url)
     return FileResponse(open(url, 'rb'))
 
