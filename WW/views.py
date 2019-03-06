@@ -82,8 +82,8 @@ def getMsgInfo(request):
     author = models.User.objects.get(unique_ID = message.author)
     result = {
         'name': author.user_name,
-        'userID': author.unique_ID.url,
-        'headerImgUrl': author.avatar_name,
+        'userID': author.unique_ID,
+        'headerImgUrl': author.avatar_name.url,
         'like': message.like,
         'dislike': message.dislike,
         'time': message.add_date,
