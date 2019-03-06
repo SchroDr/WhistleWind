@@ -6,6 +6,7 @@ from django.http import JsonResponse
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
+PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 
 def login(request):
@@ -86,7 +87,7 @@ def getMsgInfo(request):
         'like': message.like,
         'dislike': message.dislike,
         'time': message.add_date,
-        'imgUrl': message.img,
+        'imgUrl': message.img.url,
         'comments': message.comments        
     }
     return JsonResponse(result)
@@ -132,7 +133,7 @@ def giveADisLike(request):
 
 def saveImg(image):
     if image is not None:
-        with open(os.path.join(MEDIA_ROOT, image.name), 'wb') as f:
+        with open(os.path.join(PIC_ROOT, image.name), 'wb') as f:
             for chunk in image.chunks(chunk_size = 1024):
                 f.write(chunk)
         return image.name
@@ -145,15 +146,15 @@ def postInfo(request):
     images = request.FILES.get('img')
     images_names = []
     if images is not None:
-        with open(os.path.join(MEDIA_ROOT, images.name), 'wb') as f:
+        with open(os.path.join(PIC_ROOT, images.name), 'wb') as f:
             for chunk in images.chunks(chunk_size = 1024):
                 f.write(chunk)
-            images_names.append(f.name)
+            images_names.append(images.name)
             print(f.name)
 
     """
     for f in images:
-        destination = open(os.path.join(MEDIA_ROOT, f.name), 'wb')
+        destination = open(os.path.join(PIC_ROOT, f.name), 'wb')
         for chunk in f.chuncks():
             destination.write(chunk)
         destination.close()
@@ -194,7 +195,8 @@ def postComt(request):
     except:
         return JsonResponse({'isSucceed': 0})
 
-def appendTo(temp, added_one):
+def appendTo(temp, key, added_one):
     temp_line = json.loads(temp)
     temp_line.append(added_one)
+
     temp = temp_line
