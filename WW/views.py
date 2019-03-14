@@ -51,11 +51,11 @@ def register(request):
 
 def getMessages(request):
     result = []
-    x = int(request.POST.get('x'))
-    y = int(request.POST.get('y'))
-    zoom = int(request.POST.get('zoom'))
-    width = int(request.POST.get('width'))
-    height = int(request.POST.get('height'))
+    x = float(request.POST.get('x'))
+    y = float(request.POST.get('y'))
+    zoom = float(request.POST.get('zoom'))
+    width = float(request.POST.get('width'))
+    height = float(request.POST.get('height'))
     messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-height, pos_y__lte = y+height)    
     for message in messages:
         one_result = {
