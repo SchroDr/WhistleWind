@@ -51,11 +51,11 @@ def register(request):
 
 def getMessages(request):
     result = []
-    x = int(request.POST.get('x'))
-    y = int(request.POST.get('y'))
-    zoom = int(request.POST.get('zoom'))
-    width = int(request.POST.get('width'))
-    height = int(request.POST.get('height'))
+    x = float(request.POST.get('x'))
+    y = float(request.POST.get('y'))
+    zoom = float(request.POST.get('zoom'))
+    width = float(request.POST.get('width'))
+    height = float(request.POST.get('height'))
     messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-height, pos_y__lte = y+height)    
     for message in messages:
         one_result = {
@@ -132,6 +132,8 @@ def giveADisLike(request):
 
 def saveImg(image):
     if image is not None:
+        print("++++++++++++++++++++++++++++")
+        print(os.path.join(PIC_ROOT, image.name))
         with open(os.path.join(PIC_ROOT, image.name), 'wb') as f:
             for chunk in image.chunks(chunk_size = 1024):
                 f.write(chunk)
@@ -142,23 +144,11 @@ def saveImg(image):
 def postInfo(request):
     userID = request.POST.get('userID')
     content = request.POST.get('content')
-    images = request.FILES.get('img')
+    images = request.FILES.getlist('img')
     images_names = []
-    if images is not None:
-        with open(os.path.join(PIC_ROOT, images.name), 'wb') as f:
-            for chunk in images.chunks(chunk_size = 1024):
-                f.write(chunk)
-            images_names.append(images.name)
-            print(f.name)
-
-    """
-    for f in images:
-        destination = open(os.path.join(PIC_ROOT, f.name), 'wb')
-        for chunk in f.chuncks():
-            destination.write(chunk)
-        destination.close()
-        images_names.append(f.name)
-    """
+    print(type(images))
+    for image in images:
+        images_names.append('media/pic/' + saveImg(image))
 
     pos_x = request.POST.get('x')
     pos_y = request.POST.get('y')
@@ -206,7 +196,13 @@ def getPic(request):
     return FileResponse(open(url, 'rb'))
 
 def userInfo(request):
-    pass 
+    userID = request.POST.get('userID')
+    user = models.User.get(unique_ID = userID)
+    result = {
+        'name': user.user_name,
+        'summary': user.introduction,
+        
+    }
 
 def getNotifct(request):
     pass
