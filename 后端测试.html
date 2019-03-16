@@ -26,7 +26,7 @@
 	<p>==================================================================</p>
 
         <p>登录</p>
-        <form action="" method="POST">
+        <form action="http://lastation.me:8000/ww/login/" method="POST">
                 email: <input type="text" name="email"><br>
                 password: <input type="text" name="password"><br>
                 <input type="submit">
@@ -125,6 +125,7 @@
         <form action="http://lastation.me:8000/ww/postInfo/" method="POST" enctype="multipart/form-data">
                 content: <input type="text" name="content"><br>
                 userId: <input type="text" name="userID"><br>
+                title:<input type="text" name="title"></br>
 				img: <input type="file" name="img"><br>
 				x-axis: <input type="text" name="x"><br>
                 y-axis: <input type="text" name="y"><br>
@@ -214,8 +215,8 @@
 		<p>==================================================================</p>
 	
         <p>获取图片</p>
-        <form action="" method="POST">
-            Image_url: <input type="text" name="Image_url"><br>
+        <form action="http://lastation.me:8000/ww/getPic/" method="POST">
+            Image_url: <input type="text" name="image_url"><br>
                 <input type="submit">
         </form>
     </ul>
