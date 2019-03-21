@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<map xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="userId"></string>
+    <string name="userName">123456</string>
+    <string name="headerImg">http://i2.hdslb.com/bfs/archive/df77d8a9e3199df917cb6a68ffff2890059821d6.jpg</string>
+    <string name="x">39.963536</string>
+    <string name="y">116.356202</string>
+    <string name="isLocation">0</string>
+</map>

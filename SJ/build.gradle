@@ -1,0 +1,39 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        maven { url "https://maven.google.com" }
+    }
+}
+
+ext {
+    android = [
+            compileSdkVersion : 28,        //根据自己项目的来配置
+            buildToolsVersion : '25.0.0',  //根据自己项目的来配置
+            targetSdkVersion  : 28,        //根据自己项目的来配置
+            supportVersion    : '25.0.0',  //android support version
+            frescoVersion     : '0.14.1'   //fresco的版本，可自行修改
+    ]
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

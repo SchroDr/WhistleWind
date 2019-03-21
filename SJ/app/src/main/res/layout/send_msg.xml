@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:layout_weight="0.6">
+
+        <Button
+            android:id="@+id/send_msg_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
+            android:text="取消"
+            android:textSize="20dp"/>
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:text="发呼息"
+            android:textSize="20dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:text="发送"
+            android:textSize="20dp"
+            android:layout_gravity="right"
+            android:id="@+id/send_msg_send_btn"
+            android:background="@color/colorPrimary"
+            />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/send_msg_title"
+            android:background="@null"
+            android:hint="标题(可选)"/>
+    </LinearLayout>
+<EditText
+    android:layout_width="match_parent"
+    android:layout_height="430dp"
+    android:layout_weight="8"
+    android:id="@+id/send_msg_content"
+    android:hint="顺风而呼...说些什么吧"
+    android:gravity="top"
+    android:background="@null"
+    />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_weight="1">
+
+        <Button
+            android:id="@+id/send_msg_select_pic"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="图片" />
+
+        <Button
+            android:id="@+id/send_msg_at_friend"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text=".@好友" />
+
+        <Button
+            android:id="@+id/send_msg_emoji"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="表情" />
+    </LinearLayout>
+</LinearLayout>
