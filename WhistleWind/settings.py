@@ -25,7 +25,7 @@ SECRET_KEY = 'lf3m2gaw8%!#nd^0+3s4&==-*=!qd@i!ab$jkzwt^8+nn-leq!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['lastation.me', 'www.lastation.me', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['lastation.me', 'www.lastation.me', 'localhost', '127.0.0.1', 'ww.lastation.me']
 
 
 # Application definition
