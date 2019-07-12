@@ -1,7 +1,7 @@
 import json
 import os
 from django.http import JsonResponse, FileResponse
-from . import models
+from . import models, sendEmail
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
