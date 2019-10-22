@@ -5,6 +5,7 @@ import django.utils.timezone as timezone
 class User(models.Model):
     id = models.AutoField("用户唯一标识符", primary_key = True)
     email = models.EmailField("邮箱")
+    phonenumber = models.CharField("电话号码", max_length = 11)
     username = models.CharField("用户名", max_length = 62, null = False, default = "WWer")
     password = models.CharField("密码", max_length = 32, null = False)
     avatar = models.ImageField("头像", upload_to = "avatars", null = False, default = "rua.jpg")
@@ -33,8 +34,8 @@ class Message(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE, verbose_name = "该信息作者", related_name='message_author_set')
     like = models.IntegerField("点赞数", default = 0)
     dislike = models.IntegerField("点踩数", default = 0)
-    who_like = models.ManyToManyField(User, verbose_name = "点赞该信息的用户", related_name='message_who_like_set')
-    who_dislike = models.ManyToManyField(User, verbose_name = "点踩该信息的用户", related_name='message_who_dislike_set')
+    who_like = models.ManyToManyField(User, verbose_name = "点赞该信息的用户", related_name='message_who_like_set', blank=True)
+    who_dislike = models.ManyToManyField(User, verbose_name = "点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
     add_date = models.DateField("发布日期", default = timezone.now)
     mod_date = models.DateField("最后修改日期", auto_now = True)
 
@@ -43,7 +44,7 @@ class Message(models.Model):
         verbose_name_plural = ("Messages")
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     def get_absolute_url(self):
         #return reverse("Message_detail", kwargs={"pk": self.pk})
@@ -56,8 +57,8 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE, verbose_name = "该评论所属用户", related_name='comment_author_set', default = '')
     content = models.TextField("评论内容", default = "Hello")
     like = models.IntegerField("点赞数", default = 0)
-    who_like = models.ManyToManyField(User, verbose_name = "点赞该评论的用户", related_name='comment_who_like_set')
-    add_date = models.DateTimeField('保存日期',default = timezone.now)
+    who_like = models.ManyToManyField(User, verbose_name = "点赞该评论的用户", related_name='comment_who_like_set', blank=True)
+    add_date = models.DateTimeField('保存日期', default = timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now = True)
     
 

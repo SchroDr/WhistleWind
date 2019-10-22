@@ -34,9 +34,7 @@ def register(request):
         'isSucceed': 0,
         'isExist': 0
     }
-    print(request)
     email = request.POST.get('email')
-    print(email)
     #username = request.POST.get('username')
     password = request.POST.get('password')
     user = models.User.objects.filter(email = email)
