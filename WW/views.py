@@ -1,13 +1,105 @@
+"""
+    本模块遵循Restful原则，使用不同的HTTP动词对应不同类型的操作
+    POST: 增加
+    GET: 获取
+    PUT: 修改
+    DELETE: 删除
+    接口的具体功能见
+    http://rap2.taobao.org/organization/repository/editor?id=224734&mod=313234
+"""
+
 import json
 import os
+from django.views import View
 from django.http import JsonResponse, FileResponse
 from . import models, sendEmail
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 
+class UsersView(View):
+    """
+    本模块用于对用户信息进行增删改查
+    """
+    def post(self, request):
+        #TO DO 用户注册
+        pass
+
+    def get(self, request):
+        #TO DO 获取用户信息
+        pass
+
+    def put(self, request):
+        #TO DO 修改用户信息
+        pass
+
+    def delete(self, request):
+        #TO DO 删除用户信息
+        #暂无需实现
+        pass
+
+class MessagesView(View):
+    """
+    本模块用于对消息进行增删改查
+    """
+    def post(self, request):
+        #TO DO 发送消息
+        pass
+
+    def get(self, request):
+        #TO DO 获取消息
+        pass
+
+    def put(self, request):
+        #TO DO 修改消息
+        pass
+
+    def delete(self, request):
+        #TO DO 删除消息
+        pass
+
+class CommentsView(View):
+    """
+    本模块用于对评论进行增删改查
+    """
+    def post(self, request):
+        #TO DO 发送评论
+        pass
+
+    def get(self, request):
+        #TO DO 获取评论
+        pass
+
+    def put(self, request):
+        #TO DO 修改评论
+        pass
+
+    def delete(self, request):
+        #TO DO 删除评论
+        pass
+
+class ImagesView(View):
+    """
+    本模块用于上传下载图片
+    """
+    def post(self, request):
+        #TO DO 上传图片
+        pass
+
+    def get(self, request):
+        #TO DO 返回图片
+        pass
+
+
+
+
+
+"""
+以下函数皆为废弃接口，仅用于参考
+"""
 def login(request):
     result = {
         'isSucceed': 0,
@@ -201,25 +293,4 @@ def userInfo(request):
         'summary': user.introduction,
         
     }
-
-def getNotifct(request):
-    pass
-
-def follow(request):
-    pass
-
-def unfollow(request):
-    pass 
-
-def getFriendsList(request):
-    pass
-
-def setAvatar(request):
-    pass
-
-def setIntro(request):
-    pass    
-
-def giveALikeToComt(request):
-    pass
 
