@@ -94,13 +94,22 @@ class ImagesView(View):
         pass
 
 
+def login(request):
+    #TO DO 登陆
+    pass
+
+def vericode(request):
+    #TO DO 向用户手机发送验证码，并将验证码存入数据库中
+    #目前打算仍用mysql进行存储验证码，也可考虑用redis等存储
+    pass
+
 
 
 
 """
 以下函数皆为废弃接口，仅用于参考
 """
-def login(request):
+def login_old(request):
     result = {
         'isSucceed': 0,
         'isNotExist': 0,
