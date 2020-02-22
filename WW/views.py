@@ -19,96 +19,109 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
+# jhc work----------------------------------------------------------------
+
 
 class UsersView(View):
     """
     本模块用于对用户信息进行增删改查
     """
+
     def post(self, request):
-        #TO DO 用户注册
-        pass
+        # TO DO 用户注册
+        result = {
+            
+        }
 
     def get(self, request):
-        #TO DO 获取用户信息
+        # TO DO 获取用户信息
         pass
 
     def put(self, request):
-        #TO DO 修改用户信息
+        # TO DO 修改用户信息
         pass
 
     def delete(self, request):
-        #TO DO 删除用户信息
-        #暂无需实现
+        # TO DO 删除用户信息
+        # 暂无需实现
         pass
+# jhc work----------------------------------------------------------------
+
 
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
     """
+
     def post(self, request):
-        #TO DO 发送消息
+        # TO DO 发送消息
         pass
 
     def get(self, request):
-        #TO DO 获取消息
+        # TO DO 获取消息
         pass
 
     def put(self, request):
-        #TO DO 修改消息
+        # TO DO 修改消息
         pass
 
     def delete(self, request):
-        #TO DO 删除消息
+        # TO DO 删除消息
         pass
+
 
 class CommentsView(View):
     """
     本模块用于对评论进行增删改查
     """
+
     def post(self, request):
-        #TO DO 发送评论
+        # TO DO 发送评论
         pass
 
     def get(self, request):
-        #TO DO 获取评论
+        # TO DO 获取评论
         pass
 
     def put(self, request):
-        #TO DO 修改评论
+        # TO DO 修改评论
         pass
 
     def delete(self, request):
-        #TO DO 删除评论
+        # TO DO 删除评论
         pass
+
 
 class ImagesView(View):
     """
     本模块用于上传下载图片
     """
+
     def post(self, request):
-        #TO DO 上传图片
+        # TO DO 上传图片
         pass
 
     def get(self, request):
-        #TO DO 返回图片
+        # TO DO 返回图片
         pass
 
 
 def login(request):
-    #TO DO 登陆
+    # TO DO 登陆
     pass
+
 
 def vericode(request):
-    #TO DO 向用户手机发送验证码，并将验证码存入数据库中
-    #目前打算仍用mysql进行存储验证码，也可考虑用redis等存储
+    # TO DO 向用户手机发送验证码，并将验证码存入数据库中
+    # 目前打算仍用mysql进行存储验证码，也可考虑用redis等存储
     pass
-
-
 
 
 """
 以下函数皆为废弃接口，仅用于参考
 """
+
+
 def login_old(request):
     result = {
         'isSucceed': 0,
@@ -118,7 +131,7 @@ def login_old(request):
     }
     email = request.POST.get('email')
     password = request.POST.get('password')
-    user = models.User.objects.filter(email = email)
+    user = models.User.objects.filter(email=email)
     if len(user) == 0:
         result['isNotExist'] = 1
         result['userId'] = ""
@@ -130,6 +143,7 @@ def login_old(request):
     result['isWrong'] = 1
     return JsonResponse(result)
 
+
 def register(request):
     result = {
         'isSucceed': 0,
@@ -138,12 +152,12 @@ def register(request):
     email = request.POST.get('email')
     #username = request.POST.get('username')
     password = request.POST.get('password')
-    user = models.User.objects.filter(email = email)
+    user = models.User.objects.filter(email=email)
     print(len(user))
     if len(user) == 1:
         result['isExist'] = 1
         return JsonResponse(result)
-    user = models.User.objects.create(email = email, password = password)
+    user = models.User.objects.create(email=email, password=password)
     result['isSucceed'] = 1
     return JsonResponse(result)
 
@@ -155,7 +169,8 @@ def getMessages(request):
     zoom = float(request.POST.get('zoom'))
     width = float(request.POST.get('width'))
     height = float(request.POST.get('height'))
-    messages = models.Message.objects.filter(pos_x__gte = x-width, pos_x__lte = x+width, pos_y__gte = y-height, pos_y__lte = y+height)    
+    messages = models.Message.objects.filter(
+        pos_x__gte=x-width, pos_x__lte=x+width, pos_y__gte=y-height, pos_y__lte=y+height)
     for message in messages:
         one_result = {
             'title': '',
@@ -166,18 +181,18 @@ def getMessages(request):
             'y': ''
         }
         one_result['title'] = message.title
-        one_result['content'] = message.content 
-        one_result['img'] = message.img 
+        one_result['content'] = message.content
+        one_result['img'] = message.img
         one_result['msgId'] = message.msg_ID
         one_result['x'] = message.pos_x
         one_result['y'] = message.pos_y
         result.append(one_result)
-    return JsonResponse(result, safe = False)
+    return JsonResponse(result, safe=False)
 
 
 def getMsgInfo(request):
-    message = models.Message.objects.get(msg_ID = request.POST.get('msgID'))
-    author = models.User.objects.get(unique_ID = message.author)
+    message = models.Message.objects.get(msg_ID=request.POST.get('msgID'))
+    author = models.User.objects.get(unique_ID=message.author)
     result = {
         'name': author.user_name,
         'userID': author.unique_ID,
@@ -186,9 +201,10 @@ def getMsgInfo(request):
         'dislike': message.dislike,
         'time': message.add_date,
         'imgUrl': message.img,
-        'comments': message.comments        
+        'comments': message.comments
     }
     return JsonResponse(result)
+
 
 def getComtInfo(request):
     result = {
@@ -200,45 +216,48 @@ def getComtInfo(request):
         'like': ''
     }
     comment_ID = request.POST.get('commentsId')
-    comment = models.Comment.objects.filter(comment_ID = comment_ID)
-    user = models.User.objects.get(unique_ID = comment.user_ID)
+    comment = models.Comment.objects.filter(comment_ID=comment_ID)
+    user = models.User.objects.get(unique_ID=comment.user_ID)
     if len(comment_ID) != 1:
         return 0
     result['name'] = user.user_name
     result['headerImgUrl'] = user.avatar_name
     result['time'] = comment.add_date
-    result['content'] = comment.content 
-    result['imgUrl'] = comment.img 
+    result['content'] = comment.content
+    result['imgUrl'] = comment.img
     result['like'] = comment.like
     return JsonResponse(result)
 
 
 def giveALike(request):
-    message = models.Message.objects.get(msg_ID = request.POST.get('msgId'))
-    user = models.User.objects.get(unique_ID = request.POST.get('userId'))
+    message = models.Message.objects.get(msg_ID=request.POST.get('msgId'))
+    user = models.User.objects.get(unique_ID=request.POST.get('userId'))
     message.like += 1
     who_like = json.loads(message.who_like)
     who_like.append(user.unique_ID)
     message.who_like = json.dumps(who_like)
 
+
 def giveADisLike(request):
-    message = models.Message.objects.get(msg_ID = request.POST.get('msgId'))
-    user = models.User.objects.get(unique_ID = request.POST.get('userId'))
+    message = models.Message.objects.get(msg_ID=request.POST.get('msgId'))
+    user = models.User.objects.get(unique_ID=request.POST.get('userId'))
     message.dislike += 1
     who_dislike = json.loads(message.who_dislike)
     who_dislike.append(user.unique_ID)
     message.who_dislike = json.dumps(who_dislike)
+
 
 def saveImg(image):
     if image is not None:
         print("++++++++++++++++++++++++++++")
         print(os.path.join(PIC_ROOT, image.name))
         with open(os.path.join(PIC_ROOT, image.name), 'wb') as f:
-            for chunk in image.chunks(chunk_size = 1024):
+            for chunk in image.chunks(chunk_size=1024):
                 f.write(chunk)
         return image.name
     else:
         return None
+
 
 def postInfo(request):
     userID = request.POST.get('userID')
@@ -252,11 +271,13 @@ def postInfo(request):
     pos_x = request.POST.get('x')
     pos_y = request.POST.get('y')
     mention = request.POST.get('mention')
-    models.Message.objects.create(pos_x = pos_x, pos_y = pos_y, content = content, author = userID, img = json.dumps(images_names))
+    models.Message.objects.create(
+        pos_x=pos_x, pos_y=pos_y, content=content, author=userID, img=json.dumps(images_names))
     result = {
         'isSucceed': 1
     }
     return JsonResponse(result)
+
 
 def postComt(request):
     try:
@@ -266,9 +287,10 @@ def postComt(request):
         img = request.FILES.get('img')
         image_name = saveImg(img)
 
-        user = models.User.objects.get(unique_ID = userID)
-        msg = models.Message.objects.get(msg_ID = msgId)
-        comment = models.Comment.objects.create(msg_ID = msgId, userID = userID, content = content, img = image_name)
+        user = models.User.objects.get(unique_ID=userID)
+        msg = models.Message.objects.get(msg_ID=msgId)
+        comment = models.Comment.objects.create(
+            msg_ID=msgId, userID=userID, content=content, img=image_name)
 
         user_comments = json.loads(user.comments)
         user_comments.append(comment.comment_ID)
@@ -283,23 +305,25 @@ def postComt(request):
     except:
         return JsonResponse({'isSucceed': 0})
 
+
 def appendTo(temp, key, added_one):
     temp_line = json.loads(temp)
     temp_line.append(added_one)
 
     temp = temp_line
 
+
 def getPic(request):
     url = request.GET.get('image_url')
     url = os.path.join(PROJECT_ROOT, url)
     return FileResponse(open(url, 'rb'))
 
+
 def userInfo(request):
     userID = request.POST.get('userID')
-    user = models.User.get(unique_ID = userID)
+    user = models.User.get(unique_ID=userID)
     result = {
         'name': user.user_name,
         'summary': user.introduction,
-        
-    }
 
+    }
