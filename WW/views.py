@@ -30,8 +30,28 @@ class UsersView(View):
     def post(self, request):
         # TO DO 用户注册
         result = {
-            
+            "state": {
+                "msg": "existed"
+            },
         }
+        try:
+            phone_number = request.POST.get("phone_number")
+            password = request.POST.get("password")
+            # veri_code = request.POST.get("veri_code")
+            user = models.User.objects.filter(phonenumber=phone_number)
+            if len(user) == 1:  # 已存在
+                result['state']['msg'] = 'existed'
+                return JsonResponse(result)
+            elif len(user) == 0:  # 不存在，可以创建
+                user = models.User.objects.create(
+                    phonenumber=phone_number, password=password)
+                user_id = user.id
+                result['data'] = {'user_id': user_id}
+                result['state']['msg'] = 'successful'
+                return JsonResponse(result)
+        except:
+            result['state']['msg'] = 'failed'
+            return JsonResponse(result)
 
     def get(self, request):
         # TO DO 获取用户信息
