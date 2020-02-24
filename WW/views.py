@@ -55,7 +55,58 @@ class UsersView(View):
 
     def get(self, request):
         # TO DO 获取用户信息
-        pass
+        result = {
+            'user_id': 0,
+            'username': '',
+            'email': '',
+            'phonenumber': '',
+            'avatar': '',
+            'introduction': '',
+            'follows': [],
+            'followers': [],
+            'friends': [],
+            'messages': [],
+            'comments': [],
+
+        }
+        # 'user_id': 0,
+        # 'username': '',
+        # 'avatar': '',
+        user_id = request.GET.get('user_id')
+        userInfo = models.User.objects.get(id=user_id)
+        result['user_id'] = user_id
+        result['username'] = userInfo.username
+        result['email'] = userInfo.email
+        result['phonenumber'] = userInfo.phonenumber
+        result['avatar'] = userInfo.avatar
+        result['introduction'] = userInfo.introduction
+        # 关注的人
+        follows = models.Followship.objects.filter(fan=user_id)
+        # follows = follows[0:10]
+        for i in follows:
+            oneFoll = models.User.objects.get(id=i.followed_user)
+            result['follows'].append(
+                {'user_id': i.followed_user, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
+        # 粉丝
+        followers = models.Followship.objects.filter(followed_user=user_id)
+        # followers = followers[0:10]
+        for i in followers:
+            oneFoll = models.User.objects.get(id=i.fan)
+            result['follows'].append(
+                {'user_id': i.fan, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
+        # 朋友
+        # friend1 = models.Friendship.objects.filter(initiator=user_id)
+        # friend2 = models.Friendship.objects.filter(recipient=user_id)
+        # messages
+        messages = models.Message.objects.filter(author=user_id)
+        for i in messages:
+            result['messages'].append(
+                {'message_id': i.id, 'title': i.title, 'content': i.content})
+        comments = models.Comment.objects.filter(author=user_id)
+        for i in comments:
+            result['comments'].append(
+                {'comment_id': i.id, 'content': i.content})
+        return JsonResponse(result)
 
     def put(self, request):
         # TO DO 修改用户信息
@@ -67,9 +118,12 @@ class UsersView(View):
         pass
 # jhc work----------------------------------------------------------------
 
+
 """
     Message模块由SchroDr绝赞摸鱼中
 """
+
+
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
