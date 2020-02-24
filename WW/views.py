@@ -67,7 +67,9 @@ class UsersView(View):
         pass
 # jhc work----------------------------------------------------------------
 
-
+"""
+    Message模块由SchroDr绝赞摸鱼中
+"""
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
