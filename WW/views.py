@@ -12,6 +12,7 @@ import json
 import os
 from django.views import View
 from django.http import JsonResponse, FileResponse
+from django.http import QueryDict
 from . import models, sendEmail
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -69,9 +70,6 @@ class UsersView(View):
             'comments': [],
 
         }
-        # 'user_id': 0,
-        # 'username': '',
-        # 'avatar': '',
         user_id = request.GET.get('user_id')
         userInfo = models.User.objects.get(id=user_id)
         result['user_id'] = user_id
@@ -110,11 +108,39 @@ class UsersView(View):
 
     def put(self, request):
         # TO DO 修改用户信息
-        pass
+        result = {
+            "state": {
+                "msg": "successful"
+            },
+            "data": {
+                "user_id": 0
+            }
+        }
+        put = QueryDict(request.body)
+        user_id = put.get('user_id')
+        username = put.get('username')
+        email = put.get('email')
+        phonenumber = put.get('phonenumber')
+        avatar = put.get('avatar')
+        introduction = put.get('introduction')
+        user = models.User.objects.filter(id=user_id)
+        if len(user) == 1:
+            try:
+                user.first().username = username
+                user.first().email = email
+                user.first().phonenumber = phonenumber
+                user.first().avatar = avatar
+                user.first().introduction = introduction
+                user.save()
+            except:
+                result['state']['msg'] = 'failed'
+        else:
+            result['state']['msg'] = 'failed'
+        return JsonResponse(request)
 
     def delete(self, request):
         # TO DO 删除用户信息
-        # 暂无需实现
+        # 暂无需实现,保留接口，暂不实现此功能
         pass
 # jhc work----------------------------------------------------------------
 
