@@ -22,7 +22,7 @@ class User(models.Model):
         verbose_name_plural = ("Users")
 
     def __str__(self):
-        return self.username
+        return str(self.id)
 
     def get_absolute_url(self):
         # return reverse("User_detail", kwargs={"pk": self.pk})
@@ -76,7 +76,7 @@ class Comment(models.Model):
         verbose_name_plural = ("Comments")
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
     def get_absolute_url(self):
         return reverse("Comment_detail", kwargs={"pk": self.pk})
@@ -93,7 +93,7 @@ class MessageImage(models.Model):
         verbose_name_plural = ("MessageImages")
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
     def get_absolute_url(self):
         # return reverse("Image_detail", kwargs={"pk": self.pk})
@@ -111,7 +111,7 @@ class CommentImage(models.Model):
         verbose_name_plural = ("CommentImages")
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
     def get_absolute_url(self):
         # return reverse("CommentImage_detail", kwargs={"pk": self.pk})

@@ -11,8 +11,7 @@
 import json
 import os
 from django.views import View
-from django.http import JsonResponse, FileResponse
-from django.http import QueryDict
+from django.http import JsonResponse, FileResponse, QueryDict
 from . import models, sendEmail
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -148,16 +147,58 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
-
-
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
     """
-
+    request_data = {
+        "user_id": 1,
+        "title": "rua",
+        "content": "ruarua",
+        "position": {
+            "pos_x": 63.9734911653,
+            "pos_y": 86.36421952785102
+        },
+        "mentioned": [
+            {
+            "user_id": 2
+            },
+            {
+            "user_id": 3
+            }
+        ],
+        "img": [
+            {
+            "image_url": ""
+            }
+        ]
+    }
     def post(self, request):
         # TO DO 发送消息
-        pass
+        result = {
+            "state": {
+                "msg": "successful"
+            },
+            "data": {
+                "msg_id": 697628
+            }
+        }
+        request_data = json.loads(request.body)
+        author_id = request_data['user_id']
+        pos_x = request_data['position']['pos_x']
+        pos_y = request_data['position']['pos_y']
+        title = request_data['title']
+        content = request_data['content']
+        author = models.User.objects.filter(id = author_id)[0]
+        message = models.Message.objects.create(
+            pos_x = pos_x,
+            pos_y = pos_y,
+            title = title,
+            content = content,
+            author = author
+        )
+        message.save()
+        return JsonResponse(result)
 
     def get(self, request):
         # TO DO 获取消息
