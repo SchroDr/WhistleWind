@@ -177,32 +177,119 @@ class MessagesView(View):
         # TO DO 发送消息
         result = {
             "state": {
-                "msg": "successful"
+                "msg": ""
             },
             "data": {
-                "msg_id": 697628
+                "msg_id": 0
             }
         }
-        request_data = json.loads(request.body)
-        author_id = request_data['user_id']
-        pos_x = request_data['position']['pos_x']
-        pos_y = request_data['position']['pos_y']
-        title = request_data['title']
-        content = request_data['content']
-        author = models.User.objects.filter(id = author_id)[0]
-        message = models.Message.objects.create(
-            pos_x = pos_x,
-            pos_y = pos_y,
-            title = title,
-            content = content,
-            author = author
-        )
-        message.save()
-        return JsonResponse(result)
+        try:
+            request_data = json.loads(request.body)
+            author_id = request_data['user_id']
+            pos_x = request_data['position']['pos_x']
+            pos_y = request_data['position']['pos_y']
+            title = request_data['title']
+            content = request_data['content']
+            author = models.User.objects.filter(id = author_id)[0]
+            message = models.Message.objects.create(
+                pos_x = pos_x,
+                pos_y = pos_y,
+                title = title,
+                content = content,
+                author = author
+            )
+            message.save()
+            result['state']['msg'] = 'successful'
+            result['data']['msg_id'] = message.id
+            return JsonResponse(result)
+        except:
+            result['state']['msg'] = 'failed'
+            result.pop('data')
+            return JsonResponse(result)
 
     def get(self, request):
         # TO DO 获取消息
-        pass
+        result = {
+            "data": {
+                "position": {
+                "pos_x": 0,
+                "pos_y": 0
+                },
+                "title": "",
+                "content": "",
+                "author": {
+                "author_id": 0,
+                "username": "",
+                "avatar": ""
+                },
+                "like": 0,
+                "dislike": 0,
+                "who_like": [
+                ],
+                "who_dislike": [
+                ],
+                "add_date": "",
+                "mod_date": "",
+                "comments": [
+                ]
+            },
+            "state": {
+                "msg": ""
+            }
+        }
+        try:
+            request_data = json.loads(request.body)
+            msg_id = request['msg_id']
+            message = models.Message.objects.filter(id = msg_id)[0]
+            author = message.author
+            result['position']['pos_x'] = message.pos_x
+            result['position']['pos_y'] = message.pos_y
+            result['title'] = message.title
+            result['content'] = message.content
+            result['author']['author_id'] = author.id
+            result['author']['username'] = author.username
+            result['author']['avatar'] = author.avatar
+            result['like'] = message.like
+            result['dislike'] = message.dislike
+            for i, user in enumerate(message.who_like.all()):
+                user_info = {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "avatar": user.avatar
+                }
+                result['data']['who_like'].append(user_info)
+                if i >= 9:
+                    break
+            for i, user in enumerate(message.who_dislike.all()):
+                user_info = {
+                    "user_id": user.id,
+                    "username": user.username,
+                    "avatar": user.avatar
+                }
+                result['data']['who_dislike'].append(user_info)
+                if i >= 9:
+                    break   
+            result['add_data'] = message.add_date
+            result['mod_date'] = message.mod_date
+            for i, comment in enumerate(message.comment_set):
+                comment_info = {
+                    "comment_id": comment.id,
+                    "content": comment.content
+                }
+                result['data']['comments'].append(comment_info)
+                if i >= 9:
+                    break
+            result['state']['msg'] = 'successful'
+            message.save()
+            return JsonResponse(result)
+        except:
+            result['state']['msg'] = 'failed'
+            result.pop('data')
+            return JsonResponse(result)
+                    
+
+
+
 
     def put(self, request):
         # TO DO 修改消息

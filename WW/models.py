@@ -16,6 +16,7 @@ class User(models.Model):
     friends = models.ManyToManyField(
         "self", verbose_name="好友", through="Friendship", symmetrical=False, related_name='friend_set')
     introduction = models.TextField("简介", default="Hello，World")
+    deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
         verbose_name = ("User")
@@ -45,6 +46,7 @@ class Message(models.Model):
         User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
     add_date = models.DateField("发布日期", default=timezone.now)
     mod_date = models.DateField("最后修改日期", auto_now=True)
+    deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
         verbose_name = ("Message")
@@ -70,6 +72,7 @@ class Comment(models.Model):
         User, verbose_name="点赞该评论的用户", related_name='comment_who_like_set', blank=True)
     add_date = models.DateTimeField('保存日期', default=timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now=True)
+    deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
         verbose_name = ("Comment")
@@ -87,6 +90,7 @@ class MessageImage(models.Model):
     img = models.ImageField("存储图片", upload_to="pic", null=False)
     message = models.ForeignKey(
         Message, on_delete=models.CASCADE, verbose_name="该图片所属信息")
+    deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
         verbose_name = ("MessageImage")
@@ -105,6 +109,7 @@ class CommentImage(models.Model):
     img = models.ImageField("存储图片", upload_to="pic", null=False)
     message = models.ForeignKey(
         Comment, on_delete=models.CASCADE, verbose_name="该图片所属评论")
+    deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
         verbose_name = ("CommentImage")
@@ -124,6 +129,7 @@ class Friendship(models.Model):
     recipient = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="接受申请的用户", related_name='recipient_set')
     date = models.DateField("成为好友的日期", default=timezone.now)
+    deleted = models.IntegerField("是否被删除", default=0)
 
 
 class Followship(models.Model):
@@ -132,3 +138,4 @@ class Followship(models.Model):
     fan = models.ForeignKey(User, on_delete=models.CASCADE,
                             verbose_name="粉丝", related_name='fan_set')
     date = models.DateField("开始关注的日期", default=timezone.now)
+    deleted = models.IntegerField("是否被删除", default=0)
