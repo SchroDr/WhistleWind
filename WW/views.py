@@ -9,6 +9,7 @@
 """
 
 import json
+import demjson
 import os
 from django.views import View
 from django.http import JsonResponse, FileResponse, QueryDict
@@ -56,53 +57,65 @@ class UsersView(View):
     def get(self, request):
         # TO DO 获取用户信息
         result = {
-            'user_id': 0,
-            'username': '',
-            'email': '',
-            'phonenumber': '',
-            'avatar': '',
-            'introduction': '',
-            'follows': [],
-            'followers': [],
-            'friends': [],
-            'messages': [],
-            'comments': [],
+            'data': {
+                'user_id': 0,
+                'username': '',
+                'email': '',
+                'phonenumber': '',
+                'avatar': '',
+                'introduction': '',
+                'follows': [],
+                'followers': [],
+                'friends': [],
+                'messages': [],
+                'comments': []
+            },
+            'state':
+                {
+                    'msg': 'failed'
+            }
 
         }
-        user_id = request.GET.get('user_id')
-        userInfo = models.User.objects.get(id=user_id)
-        result['user_id'] = user_id
-        result['username'] = userInfo.username
-        result['email'] = userInfo.email
-        result['phonenumber'] = userInfo.phonenumber
-        result['avatar'] = userInfo.avatar
-        result['introduction'] = userInfo.introduction
-        # 关注的人
-        follows = models.Followship.objects.filter(fan=user_id)
-        # follows = follows[0:10]
-        for i in follows:
-            oneFoll = models.User.objects.get(id=i.followed_user)
-            result['follows'].append(
-                {'user_id': i.followed_user, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
-        # 粉丝
-        followers = models.Followship.objects.filter(followed_user=user_id)
-        # followers = followers[0:10]
-        for i in followers:
-            oneFoll = models.User.objects.get(id=i.fan)
-            result['follows'].append(
-                {'user_id': i.fan, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
-        # 朋友
-        # friend1 = models.Friendship.objects.filter(initiator=user_id)
-        # friend2 = models.Friendship.objects.filter(recipient=user_id)
-        # messages
-        messages = models.Message.objects.filter(author=user_id)
-        for i in messages:
-            result['messages'].append(
-                {'message_id': i.id, 'title': i.title, 'content': i.content})
-        comments = models.Comment.objects.filter(author=user_id)
-        for i in comments:
-            result['comments'].append(
-                {'comment_id': i.id, 'content': i.content})
+        try:
+            user_id = request.GET.get('user_id')
+            userInfo = models.User.objects.filter(id=user_id)
+            userInfo = userInfo.first()
+            # userInfo = userInfo.first()
+            result['data']['user_id'] = int(user_id)
+            result['data']['username'] = userInfo.username
+            result['data']['email'] = userInfo.email
+            result['data']['phonenumber'] = userInfo.phonenumber
+            result['data']['avatar'] = str(userInfo.avatar)
+            result['data']['introduction'] = userInfo.introduction
+            # 关注的人
+            follows = models.Followship.objects.filter(fan=user_id)
+            # follows = follows[0:10]
+            for i in follows:
+                oneFoll = models.User.objects.get(id=i.followed_user)
+                result['data']['follows'].append(
+                    {'user_id': i.followed_user, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
+            # 粉丝
+            followers = models.Followship.objects.filter(followed_user=user_id)
+            # followers = followers[0:10]
+            for i in followers:
+                oneFoll = models.User.objects.get(id=i.fan)
+                result['data']['follows'].append(
+                    {'user_id': i.fan, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
+            # 朋友
+            # friend1 = models.Friendship.objects.filter(initiator=user_id)
+            # friend2 = models.Friendship.objects.filter(recipient=user_id)
+            # messages
+            messages = models.Message.objects.filter(author=user_id)
+            for i in messages:
+                result['data']['messages'].append(
+                    {'message_id': i.id, 'title': i.title, 'content': i.content})
+            comments = models.Comment.objects.filter(author=user_id)
+            for i in comments:
+                result['data']['comments'].append(
+                    {'comment_id': i.id, 'content': i.content})
+            result['state']['msg'] = 'successful'
+        except:
+            result['state']['msg'] = 'failed'
         return JsonResponse(result)
 
     def put(self, request):
@@ -115,27 +128,32 @@ class UsersView(View):
                 "user_id": 0
             }
         }
-        put = QueryDict(request.body)
-        user_id = put.get('user_id')
-        username = put.get('username')
-        email = put.get('email')
-        phonenumber = put.get('phonenumber')
-        avatar = put.get('avatar')
-        introduction = put.get('introduction')
+        # print(json.dumps(str(request.body, encoding='utf-8')))
+        put = demjson.decode(request.body)
+        # put = json.loads(json.dumps(str(request.body, encoding='utf-8')))
+        # put = QueryDict(str(request.body, encoding='utf-8'))
+        user_id = put['user_id']
+        username = put['username']
+        email = put['email']
+        phonenumber = put['phonenumber']
+        avatar = put['avatar']
+        introduction = put['introduction']
         user = models.User.objects.filter(id=user_id)
         if len(user) == 1:
-            try:
-                user.first().username = username
-                user.first().email = email
-                user.first().phonenumber = phonenumber
-                user.first().avatar = avatar
-                user.first().introduction = introduction
-                user.save()
-            except:
-                result['state']['msg'] = 'failed'
+            # try:
+            user.first().username = username
+            user.first().email = email
+            user.first().phonenumber = phonenumber
+            user.first().avatar = avatar
+            user.first().introduction = introduction
+            user.first().save()
+            result['state']['msg'] = 'successful'
+            result['data']['user_id'] = user_id
+            # except:
+            #     result['state']['msg'] = 'failed'
         else:
             result['state']['msg'] = 'failed'
-        return JsonResponse(request)
+        return JsonResponse(result)
 
     def delete(self, request):
         # TO DO 删除用户信息
@@ -147,6 +165,8 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
+
+
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
@@ -161,135 +181,49 @@ class MessagesView(View):
         },
         "mentioned": [
             {
-            "user_id": 2
+                "user_id": 2
             },
             {
-            "user_id": 3
+                "user_id": 3
             }
         ],
         "img": [
             {
-            "image_url": ""
+                "image_url": ""
             }
         ]
     }
+
     def post(self, request):
         # TO DO 发送消息
         result = {
             "state": {
-                "msg": ""
+                "msg": "successful"
             },
             "data": {
-                "msg_id": 0
+                "msg_id": 697628
             }
         }
-        try:
-            request_data = json.loads(request.body)
-            author_id = request_data['user_id']
-            pos_x = request_data['position']['pos_x']
-            pos_y = request_data['position']['pos_y']
-            title = request_data['title']
-            content = request_data['content']
-            author = models.User.objects.filter(id = author_id)[0]
-            message = models.Message.objects.create(
-                pos_x = pos_x,
-                pos_y = pos_y,
-                title = title,
-                content = content,
-                author = author
-            )
-            message.save()
-            result['state']['msg'] = 'successful'
-            result['data']['msg_id'] = message.id
-            return JsonResponse(result)
-        except:
-            result['state']['msg'] = 'failed'
-            result.pop('data')
-            return JsonResponse(result)
+        request_data = json.loads(request.body)
+        author_id = request_data['user_id']
+        pos_x = request_data['position']['pos_x']
+        pos_y = request_data['position']['pos_y']
+        title = request_data['title']
+        content = request_data['content']
+        author = models.User.objects.filter(id=author_id)[0]
+        message = models.Message.objects.create(
+            pos_x=pos_x,
+            pos_y=pos_y,
+            title=title,
+            content=content,
+            author=author
+        )
+        message.save()
+        return JsonResponse(result)
 
     def get(self, request):
         # TO DO 获取消息
-        result = {
-            "data": {
-                "position": {
-                "pos_x": 0,
-                "pos_y": 0
-                },
-                "title": "",
-                "content": "",
-                "author": {
-                "author_id": 0,
-                "username": "",
-                "avatar": ""
-                },
-                "like": 0,
-                "dislike": 0,
-                "who_like": [
-                ],
-                "who_dislike": [
-                ],
-                "add_date": "",
-                "mod_date": "",
-                "comments": [
-                ]
-            },
-            "state": {
-                "msg": ""
-            }
-        }
-        try:
-            request_data = json.loads(request.body)
-            msg_id = request['msg_id']
-            message = models.Message.objects.filter(id = msg_id)[0]
-            author = message.author
-            result['position']['pos_x'] = message.pos_x
-            result['position']['pos_y'] = message.pos_y
-            result['title'] = message.title
-            result['content'] = message.content
-            result['author']['author_id'] = author.id
-            result['author']['username'] = author.username
-            result['author']['avatar'] = author.avatar
-            result['like'] = message.like
-            result['dislike'] = message.dislike
-            for i, user in enumerate(message.who_like.all()):
-                user_info = {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "avatar": user.avatar
-                }
-                result['data']['who_like'].append(user_info)
-                if i >= 9:
-                    break
-            for i, user in enumerate(message.who_dislike.all()):
-                user_info = {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "avatar": user.avatar
-                }
-                result['data']['who_dislike'].append(user_info)
-                if i >= 9:
-                    break   
-            result['add_data'] = message.add_date
-            result['mod_date'] = message.mod_date
-            for i, comment in enumerate(message.comment_set):
-                comment_info = {
-                    "comment_id": comment.id,
-                    "content": comment.content
-                }
-                result['data']['comments'].append(comment_info)
-                if i >= 9:
-                    break
-            result['state']['msg'] = 'successful'
-            message.save()
-            return JsonResponse(result)
-        except:
-            result['state']['msg'] = 'failed'
-            result.pop('data')
-            return JsonResponse(result)
-                    
-
-
-
+        pass
 
     def put(self, request):
         # TO DO 修改消息
