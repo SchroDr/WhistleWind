@@ -233,6 +233,8 @@ class MessagesView(View):
         # TO DO 删除消息
         pass
 
+# jhc----------------
+
 
 class CommentsView(View):
     """
@@ -254,6 +256,7 @@ class CommentsView(View):
     def delete(self, request):
         # TO DO 删除评论
         pass
+# jhc-----------------------------------
 
 
 class ImagesView(View):
