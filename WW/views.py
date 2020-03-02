@@ -238,16 +238,78 @@ class MessagesView(View):
 
 class CommentsView(View):
     """
-    本模块用于对评论进行增删改查
+    本模块用于对评论进行增删改查；
     """
 
     def post(self, request):
         # TO DO 发送评论
-        pass
+        result = {
+            "state": {
+                "msg": "successful"
+            },
+            "data": {
+                "comment_id": 0
+            }
+        }
+        user_id = request.POST.get("user_id")
+        content = request.POST.get("content")
+        msg_id = request.POST.get("msg_id")
+        try:
+            comm = models.Comment.objects.create(
+                msg=msg_id,
+                content=content,
+                author=user_id)
+            result['state']['msg'] = 'successful'
+            result['data']['comment_id'] = comm.id
+        except:
+            result['state']['msg'] = 'failed'
+        return JsonResponse(result)
 
     def get(self, request):
         # TO DO 获取评论
-        pass
+        result = {
+            "msg_id": 0,
+            "author_id": 0,
+            "content": "",
+            "like": 0,
+            "who_like": [
+                {
+                    "user_id": 0,
+                    "username": "",
+                    "avatar": ""
+                },
+                {
+                    "user_id": 0,
+                    "username": "",
+                    "avatar": ""
+                }
+            ],
+            "add_date": "",
+            "mod_date": ""
+        }
+        comment_id = request.GET.get('comment_id')
+        try:
+            comment = models.Comment.objects.filter(id=comment_id)
+            if len(comment) != 0:
+                comment = comment.first()
+                if comment.deleted != 1:
+                    result['msg_id'] = comment.id
+                    result['author_id'] = comment.author
+                    result['content'] = comment.content
+                    result['like'] = comment.like
+                    result['add_date'] = comment.add_date
+                    result['mod_date'] = comment.mod_date
+                    who_like = models.Comment.objects.all()
+                    for i in who_like:
+                        oneLike = {
+                            "user_id": i.id,
+                            "username": i.username,
+                            "avatar": i.avatar,
+                        }
+                        result['who_like'].append(oneLike)
+        except:
+            pass
+        return JsonResponse(result)
 
     def put(self, request):
         # TO DO 修改评论
@@ -255,7 +317,25 @@ class CommentsView(View):
 
     def delete(self, request):
         # TO DO 删除评论
-        pass
+        result = {
+            "state": {
+                "msg": "successful"
+            },
+            "data": {
+                "comment_id": 0
+            }
+        }
+        delete = demjson.decode(request.body)
+        try:
+            comm = models.Comment.objects.get(id=delete['comment_id'])
+            if comm.deleted != 1:
+                comm.deleted = 1
+                comm.save()
+                result['state']['msg'] = 'successful'
+                result['data']['comment_id'] = comm.id
+        except:
+            result['state']['msg'] = 'failed'
+        return JsonResponse(result)q
 # jhc-----------------------------------
 
 
