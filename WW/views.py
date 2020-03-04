@@ -10,6 +10,8 @@
 
 import json
 import os
+import demjson
+import traceback
 from django.views import View
 from django.http import JsonResponse, FileResponse, QueryDict
 from . import models, sendEmail
@@ -184,7 +186,7 @@ class MessagesView(View):
             }
         }
         try:
-            request_data = json.loads(request.body)
+            request_data = demjson.decode(request.body)
             author_id = request_data['user_id']
             pos_x = request_data['position']['pos_x']
             pos_y = request_data['position']['pos_y']
@@ -202,9 +204,12 @@ class MessagesView(View):
             result['state']['msg'] = 'successful'
             result['data']['msg_id'] = message.id
             return JsonResponse(result)
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
             result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            #print('traceback.format_exc():\n%s' % traceback.format_exc())
             return JsonResponse(result)
 
     def get(self, request):
@@ -238,8 +243,9 @@ class MessagesView(View):
             }
         }
         try:
-            request_data = json.loads(request.body)
-            msg_id = request['msg_id']
+            print(request)
+            request_data = demjson.decode(request.body)
+            msg_id = request_data['msg_id']
             message = models.Message.objects.filter(id = msg_id)[0]
             author = message.author
             result['position']['pos_x'] = message.pos_x
@@ -282,9 +288,11 @@ class MessagesView(View):
             result['state']['msg'] = 'successful'
             message.save()
             return JsonResponse(result)
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
             result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
                     
 
