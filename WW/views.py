@@ -210,9 +210,10 @@ class MessagesView(View):
         # TO DO 获取消息
         result = {
             "data": {
+                'msg_id': 0,
                 "position": {
-                "pos_x": 0,
-                "pos_y": 0
+                    "pos_x": 0,
+                    "pos_y": 0
                 },
                 "title": "",
                 "content": "",
@@ -237,25 +238,26 @@ class MessagesView(View):
             }
         }
         try:
-            print(request)
-            request_data = demjson.decode(request.body)
+            #request_data = demjson.decode(request.body)
+            request_data = request.GET.dict()
             msg_id = request_data['msg_id']
             message = models.Message.objects.filter(id = msg_id)[0]
             author = message.author
-            result['position']['pos_x'] = message.pos_x
-            result['position']['pos_y'] = message.pos_y
-            result['title'] = message.title
-            result['content'] = message.content
-            result['author']['author_id'] = author.id
-            result['author']['username'] = author.username
-            result['author']['avatar'] = author.avatar
-            result['like'] = message.like
-            result['dislike'] = message.dislike
+            result['data']['msg_id'] = msg_id
+            result['data']['position']['pos_x'] = message.pos_x
+            result['data']['position']['pos_y'] = message.pos_y
+            result['data']['title'] = message.title
+            result['data']['content'] = message.content
+            result['data']['author']['author_id'] = author.id
+            result['data']['author']['username'] = author.username
+            result['data']['author']['avatar'] = author.avatar.url
+            result['data']['like'] = message.like
+            result['data']['dislike'] = message.dislike
             for i, user in enumerate(message.who_like.all()):
                 user_info = {
                     "user_id": user.id,
                     "username": user.username,
-                    "avatar": user.avatar
+                    "avatar": user.avatar.path
                 }
                 result['data']['who_like'].append(user_info)
                 if i >= 9:
@@ -264,14 +266,14 @@ class MessagesView(View):
                 user_info = {
                     "user_id": user.id,
                     "username": user.username,
-                    "avatar": user.avatar
+                    "avatar": user.avatar.path
                 }
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
                     break   
             result['add_data'] = message.add_date
             result['mod_date'] = message.mod_date
-            for i, comment in enumerate(message.comment_set):
+            for i, comment in enumerate(message.comment_set.all()):
                 comment_info = {
                     "comment_id": comment.id,
                     "content": comment.content
@@ -281,6 +283,7 @@ class MessagesView(View):
                     break
             result['state']['msg'] = 'successful'
             message.save()
+            #print(result)
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
@@ -335,37 +338,38 @@ class CommentsView(View):
     def get(self, request):
         # TO DO 获取评论
         result = {
-            "msg_id": 0,
-            "author_id": 0,
-            "content": "",
-            "like": 0,
-            "who_like": [
-                {
-                    "user_id": 0,
-                    "username": "",
-                    "avatar": ""
-                },
+            "data": {
+                "msg_id": 0,
+                "author_id": 0,
+                "content": "",
+                "like": 0,
+                "who_like": [
                 {
                     "user_id": 0,
                     "username": "",
                     "avatar": ""
                 }
-            ],
-            "add_date": "",
-            "mod_date": ""
+                ],
+                "add_date": "",
+                "mod_date": ""
+            },
+            "state": {
+                "msg": "failed"
+            }
         }
+
         comment_id = request.GET.get('comment_id')
         try:
             comment = models.Comment.objects.filter(id=comment_id)
             if len(comment) != 0:
                 comment = comment.first()
                 if comment.deleted != 1:
-                    result['msg_id'] = comment.id
-                    result['author_id'] = comment.author
-                    result['content'] = comment.content
-                    result['like'] = comment.like
-                    result['add_date'] = comment.add_date
-                    result['mod_date'] = comment.mod_date
+                    result['data']['msg_id'] = comment.id
+                    result['data']['author_id'] = comment.author
+                    result['data']['content'] = comment.content
+                    result['data']['like'] = comment.like
+                    result['data']['add_date'] = comment.add_date
+                    result['data']['mod_date'] = comment.mod_date
                     who_like = models.Comment.objects.all()
                     for i in who_like:
                         oneLike = {
