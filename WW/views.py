@@ -23,8 +23,6 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 # jhc work----------------------------------------------------------------
-
-
 class UsersView(View):
     """
     本模块用于对用户信息进行增删改查
@@ -167,35 +165,10 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
-
-
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
     """
-    request_data = {
-        "user_id": 1,
-        "title": "rua",
-        "content": "ruarua",
-        "position": {
-            "pos_x": 63.9734911653,
-            "pos_y": 86.36421952785102
-        },
-        "mentioned": [
-            {
-                "user_id": 2
-            },
-            {
-                "user_id": 3
-            }
-        ],
-        "img": [
-            {
-                "image_url": ""
-            }
-        ]
-    }
-
     def post(self, request):
         # TO DO 发送消息
         result = {
@@ -206,7 +179,6 @@ class MessagesView(View):
                 "msg_id": 697628
             }
         }
-<<<<<<< HEAD
         try:
             request_data = demjson.decode(request.body)
             author_id = request_data['user_id']
@@ -320,28 +292,6 @@ class MessagesView(View):
 
 
 
-=======
-        request_data = json.loads(request.body)
-        author_id = request_data['user_id']
-        pos_x = request_data['position']['pos_x']
-        pos_y = request_data['position']['pos_y']
-        title = request_data['title']
-        content = request_data['content']
-        author = models.User.objects.filter(id=author_id)[0]
-        message = models.Message.objects.create(
-            pos_x=pos_x,
-            pos_y=pos_y,
-            title=title,
-            content=content,
-            author=author
-        )
-        message.save()
-        return JsonResponse(result)
-
-    def get(self, request):
-        # TO DO 获取消息
-        pass
->>>>>>> 82b9578898227efabe56c9f09399d85f66deeda4
 
     def put(self, request):
         # TO DO 修改消息
@@ -351,9 +301,8 @@ class MessagesView(View):
         # TO DO 删除消息
         pass
 
+
 # jhc----------------
-
-
 class CommentsView(View):
     """
     本模块用于对评论进行增删改查；
@@ -453,7 +402,7 @@ class CommentsView(View):
                 result['data']['comment_id'] = comm.id
         except:
             result['state']['msg'] = 'failed'
-        return JsonResponse(result)q
+        return JsonResponse(result)
 # jhc-----------------------------------
 
 
