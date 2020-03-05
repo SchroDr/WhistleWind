@@ -243,7 +243,7 @@ class MessagesView(View):
             msg_id = request_data['msg_id']
             message = models.Message.objects.filter(id = msg_id)[0]
             author = message.author
-            result['data']['msg_id'] = msg_id
+            result['data']['msg_id'] = message.id
             result['data']['position']['pos_x'] = message.pos_x
             result['data']['position']['pos_y'] = message.pos_y
             result['data']['title'] = message.title
@@ -293,16 +293,67 @@ class MessagesView(View):
             return JsonResponse(result)
                     
 
-
-
-
     def put(self, request):
         # TO DO 修改消息
-        pass
+        result = {
+            "state": {
+                "msg": ""
+            },
+            "data": {
+                "msg_id": 0
+            }
+        }
+        try:
+            request_data = demjson.decode(request.body)
+            msg_id = request_data['msg_id']
+            message = models.Message.objects.filter(id = msg_id)[0]
+            if 'title' in request_data.keys():
+                message.title = request_data['title']
+            if 'content' in request_data.keys():
+                message.content = request_data['content']
+            if 'img' in request_data.keys():
+                for img in request_data['img']:
+                    message_image = models.MessageImage.objects.create(
+                        img = img['image_url'],
+                        message = message
+                    )
+                    message_image.save()
+            message.save()
+            result['state']['msg'] = 'successful'
+            result['data']['msg_id'] = message.id
+            return JsonResponse(result)
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
+
 
     def delete(self, request):
         # TO DO 删除消息
-        pass
+        result = {
+            "state": {
+                "msg": ""
+            },
+            "data": {
+                "msg_id": 0
+            }
+        }
+        try:
+            request_data = demjson.decode(request.body)
+            msg_id = request_data['msg_id']
+            message = models.Message.objects.filter(id = msg_id)[0]
+            message.delete()
+            result['state']['msg'] = 'successful'
+            result['data']['msg_id'] = msg_id
+            return JsonResponse(result)
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
 
 
 # jhc----------------
@@ -339,6 +390,7 @@ class CommentsView(View):
         # TO DO 获取评论
         result = {
             "data": {
+                "comment_id": 0,
                 "msg_id": 0,
                 "author_id": 0,
                 "content": "",
@@ -364,7 +416,8 @@ class CommentsView(View):
             if len(comment) != 0:
                 comment = comment.first()
                 if comment.deleted != 1:
-                    result['data']['msg_id'] = comment.id
+                    result['data']['comment_id'] = comment.id
+                    result['data']['msg_id'] = comment.msg
                     result['data']['author_id'] = comment.author
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like

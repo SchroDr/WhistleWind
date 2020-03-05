@@ -82,7 +82,8 @@ class Comment(models.Model):
         return str(self.id)
 
     def get_absolute_url(self):
-        return reverse("Comment_detail", kwargs={"pk": self.pk})
+        #return reverse("Comment_detail", kwargs={"pk": self.pk})
+        pass
 
 
 class MessageImage(models.Model):
