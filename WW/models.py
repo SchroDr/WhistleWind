@@ -1,6 +1,17 @@
 from django.db import models
 import django.utils.timezone as timezone
 
+class Image(models.Model):
+    image_type = {
+        ('avatar', 'Avatar'),
+        ('universal', 'Universal')
+    }
+    id = models.AutoField("图片唯一标识符", primary_key=True)
+    img = models.ImageField("存储图片", upload_to="pic", null=False)
+    type = models.CharField("图片类型", choices = image_type, default = "universal", max_length=31)
+    upload_date = models.DateTimeField('保存日期', default=timezone.now)
+    size = models.FloatField("图片大小，单位为Mb", null=True)
+
 
 class User(models.Model):
     id = models.AutoField("用户唯一标识符", primary_key=True)
@@ -9,8 +20,7 @@ class User(models.Model):
     username = models.CharField(
         "用户名", max_length=62, null=False, default="WWer")
     password = models.CharField("密码", max_length=32, null=False)
-    avatar = models.ImageField(
-        "头像", upload_to="avatars", null=False, default="rua.jpg")
+    avatar = models.CharField("存储头像地址", null=False, max_length=500, default = "pic/rua.jpg")
     follows = models.ManyToManyField(
         "self", verbose_name="关注用户", through="Followship", symmetrical=False, related_name='follow_set')
     friends = models.ManyToManyField(
@@ -88,7 +98,8 @@ class Comment(models.Model):
 
 class MessageImage(models.Model):
     id = models.AutoField("信息图片唯一标识符", primary_key=True)
-    img = models.ImageField("存储图片", upload_to="pic", null=False)
+    img = models.CharField("存储图片地址", null=False, max_length=500)
+    thumbnail = models.CharField("存储缩略图片地址", null=False, max_length=500)
     message = models.ForeignKey(
         Message, on_delete=models.CASCADE, verbose_name="该图片所属信息")
     deleted = models.IntegerField("是否被删除", default=0)
@@ -107,7 +118,8 @@ class MessageImage(models.Model):
 
 class CommentImage(models.Model):
     id = models.AutoField("评论图片唯一标识符", primary_key=True)
-    img = models.ImageField("存储图片", upload_to="pic", null=False)
+    img = models.CharField("存储图片地址", null=False, max_length=500)
+    thumbnail = models.CharField("存储缩略图片地址", null=False, max_length=500)
     message = models.ForeignKey(
         Comment, on_delete=models.CASCADE, verbose_name="该图片所属评论")
     deleted = models.IntegerField("是否被删除", default=0)

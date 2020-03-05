@@ -9,14 +9,15 @@
 """
 
 import json
-import demjson
 import os
 import demjson
 import traceback
+from . import models, sendEmail
 from django.views import View
 from django.http import JsonResponse, FileResponse, QueryDict
-from . import models, sendEmail
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from aliyunsdkcore.client import AcsClient
+from aliyunsdkcore.request import CommonRequest
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
@@ -250,7 +251,7 @@ class MessagesView(View):
             result['data']['content'] = message.content
             result['data']['author']['author_id'] = author.id
             result['data']['author']['username'] = author.username
-            result['data']['author']['avatar'] = author.avatar.url
+            result['data']['author']['avatar'] = author.avatar
             result['data']['like'] = message.like
             result['data']['dislike'] = message.dislike
             for i, user in enumerate(message.who_like.all()):
@@ -471,13 +472,51 @@ class ImagesView(View):
     """
 
     def post(self, request):
-        # TO DO 上传图片
-        pass
+        #TO DO 上传图片
+        result = {
+            "data":{
+                "image_url": ""
+            },
+            "state":{
+                "msg": ""
+            }
+        }
+        try:
+            image_file = request.FILES.get("image")
+            image_type = request.POST.get("type")
+            image = models.Image.objects.create(
+                img = image_file,
+                type = image_type
+            )
+            image.save()
+            result['data']['image_url'] = image.img.url 
+            result['state']['msg'] = 'successful'
+            return JsonResponse(result)
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
+        
 
     def get(self, request):
         # TO DO 返回图片
-        pass
-
+        try:
+            url = request.GET.get('image_url')
+            url = os.path.join(PROJECT_ROOT, url)
+            return FileResponse(open(url, 'rb'))
+        except Exception as e:
+            result = {
+                "state":{
+                    "msg": ""
+                }
+            }
+            result['state']['msg'] = 'failed'
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
+        
 
 def login(request):
     # TO DO 登陆
@@ -487,6 +526,33 @@ def login(request):
 def vericode(request):
     # TO DO 向用户手机发送验证码，并将验证码存入数据库中
     # 目前打算仍用mysql进行存储验证码，也可考虑用redis等存储
+    # result = {
+    #     "state": {
+    #         "msg": ""
+    #     }
+    # }
+    # try:
+    #     request_data = demjson.decode(request.body)
+    #     phone_number = request_data['phone_number']
+
+    #     client = AcsClient('LTAIFp0FVf7njxtN', 'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
+    #     request = CommonRequest()
+    #     request.set_accept_format('json')
+    #     request.set_domain('dysmsapi.aliyuncs.com')
+    #     request.set_method('POST')
+    #     request.set_protocol_type('https') # https | http
+    #     request.set_version('2017-05-25')
+    #     request.set_action_name('SendSms')
+
+    #     request.add_query_param('RegionId', "cn-hangzhou")
+    #     request.add_query_param('PhoneNumbers', "13521623093")
+    #     request.add_query_param('SignName', "顺呼验证码")
+    #     request.add_query_param('TemplateCode', "SMS_158051516")
+    #     request.add_query_param('TemplateParam', "{'code': '0000'}")
+
+    #     response = client.do_action(request)
+    #     # python2:  print(response) 
+    #     print(str(response, encoding = 'utf-8'))
     pass
 
 
