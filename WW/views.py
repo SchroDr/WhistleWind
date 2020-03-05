@@ -462,7 +462,9 @@ class CommentsView(View):
         return JsonResponse(result)
 # jhc-----------------------------------
 
-
+"""
+Image模块由SchroDr绝赞划水中！
+"""
 class ImagesView(View):
     """
     本模块用于上传下载图片
