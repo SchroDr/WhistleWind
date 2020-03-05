@@ -8,6 +8,7 @@
     http://rap2.taobao.org/organization/repository/editor?id=224734&mod=313234
 """
 
+import exrex
 import json
 import os
 import demjson
@@ -16,6 +17,7 @@ from . import models, sendEmail
 from django.views import View
 from django.http import JsonResponse, FileResponse, QueryDict
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.core.cache import cache
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.request import CommonRequest
 
@@ -525,35 +527,41 @@ def login(request):
 
 def vericode(request):
     # TO DO 向用户手机发送验证码，并将验证码存入数据库中
-    # 目前打算仍用mysql进行存储验证码，也可考虑用redis等存储
-    # result = {
-    #     "state": {
-    #         "msg": ""
-    #     }
-    # }
-    # try:
-    #     request_data = demjson.decode(request.body)
-    #     phone_number = request_data['phone_number']
+    result = {
+        "state": {
+            "msg": ""
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        phone_number = request_data['phone_number']
 
-    #     client = AcsClient('LTAIFp0FVf7njxtN', 'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
-    #     request = CommonRequest()
-    #     request.set_accept_format('json')
-    #     request.set_domain('dysmsapi.aliyuncs.com')
-    #     request.set_method('POST')
-    #     request.set_protocol_type('https') # https | http
-    #     request.set_version('2017-05-25')
-    #     request.set_action_name('SendSms')
+        client = AcsClient('LTAIFp0FVf7njxtN', 'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
+        request = CommonRequest()
+        request.set_accept_format('json')
+        request.set_domain('dysmsapi.aliyuncs.com')
+        request.set_method('POST')
+        request.set_protocol_type('https') # https | http
+        request.set_version('2017-05-25')
+        request.set_action_name('SendSms')
 
-    #     request.add_query_param('RegionId', "cn-hangzhou")
-    #     request.add_query_param('PhoneNumbers', "13521623093")
-    #     request.add_query_param('SignName', "顺呼验证码")
-    #     request.add_query_param('TemplateCode', "SMS_158051516")
-    #     request.add_query_param('TemplateParam', "{'code': '0000'}")
+        request.add_query_param('RegionId', "cn-hangzhou")
+        request.add_query_param('PhoneNumbers', "13521623093")
+        request.add_query_param('SignName', "顺呼验证码")
+        request.add_query_param('TemplateCode', "SMS_158051516")
+        code = exrex.getone(r"\d{4}")
+        request.add_query_param('TemplateParam', "{'code': '%s'}" % code)
 
-    #     response = client.do_action(request)
-    #     # python2:  print(response) 
-    #     print(str(response, encoding = 'utf-8'))
-    pass
+        response = client.do_action(request)
+        #print(str(response, encoding = 'utf-8'))
+        cache.set(phone_number, code, 1800)
+        result['state']['msg'] = 'successful'
+        return JsonResponse(result)
+    except Exception as e:
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
+    
 
 
 """

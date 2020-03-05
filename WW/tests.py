@@ -218,7 +218,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']['msg_id'], request_data['msg_id'])
 
 
-
 class CommentsModelTests(TestCase):
     """
     用于测试Comments模块
@@ -370,3 +369,56 @@ class ImagesModelTests(TestCase):
             '/ww/images/', data = request_data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'image/jpeg')
+
+
+class OtherModelTests(TestCase):
+    """
+    用于测试零散功能
+    """
+
+    c = Client()
+
+    def setUp(self):
+        """
+        初始化测试数据库
+        向测试数据库中添加10个用户信息、50个消息、250条评论
+        """
+        for i in range(10):
+            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
+            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
+            email = exrex.getone(
+                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
+            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
+            password = "mimajiusuiyile123!"
+            user = models.User.objects.create(
+                email=email,
+                phonenumber=phonenumber,
+                password=password)
+            user.save()
+            for i in range(5):
+                message = models.Message.objects.create(
+                    pos_x = 63.9734911653,
+                    pos_y = 86.36421952785102,
+                    title = "Test",
+                    content = "Heeeeeeeeeeeeeeeelo",
+                    author = user
+                )
+                message.save()
+                for i in range(5):
+                    comment = models.Comment.objects.create(
+                        msg = message,
+                        author = user,
+                        content = "Ruaaaaaaaa"
+                    )
+                    comment.save()
+    
+    def test_vericode_works_successfully(self):
+        """
+        用于测试发送图片是否正常工作
+        """
+        request_data = {
+            "phone_number": '13521623093'
+        }
+        response = self.c.post('/ww/users/vericode/', data = request_data, content_type = 'application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
