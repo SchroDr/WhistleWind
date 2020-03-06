@@ -1,6 +1,7 @@
 from django.db import models
 import django.utils.timezone as timezone
 
+
 class Image(models.Model):
     image_type = {
         ('avatar', 'Avatar'),
@@ -8,7 +9,8 @@ class Image(models.Model):
     }
     id = models.AutoField("图片唯一标识符", primary_key=True)
     img = models.ImageField("存储图片", upload_to="pic", null=False)
-    type = models.CharField("图片类型", choices = image_type, default = "universal", max_length=31)
+    type = models.CharField("图片类型", choices=image_type,
+                            default="universal", max_length=31)
     upload_date = models.DateTimeField('保存日期', default=timezone.now)
     size = models.FloatField("图片大小，单位为Mb", null=True)
 
@@ -20,7 +22,8 @@ class User(models.Model):
     username = models.CharField(
         "用户名", max_length=62, null=False, default="WWer")
     password = models.CharField("密码", max_length=32, null=False)
-    avatar = models.CharField("存储头像地址", null=False, max_length=500, default = "pic/rua.jpg")
+    avatar = models.CharField("存储头像地址", null=False,
+                              max_length=500, default="pic/rua.jpg")
     follows = models.ManyToManyField(
         "self", verbose_name="关注用户", through="Followship", symmetrical=False, related_name='follow_set')
     friends = models.ManyToManyField(
@@ -92,7 +95,7 @@ class Comment(models.Model):
         return str(self.id)
 
     def get_absolute_url(self):
-        #return reverse("Comment_detail", kwargs={"pk": self.pk})
+        # return reverse("Comment_detail", kwargs={"pk": self.pk})
         pass
 
 

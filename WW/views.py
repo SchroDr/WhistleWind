@@ -26,6 +26,8 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 # jhc work----------------------------------------------------------------
+
+
 class UsersView(View):
     """
     本模块用于对用户信息进行增删改查
@@ -168,10 +170,13 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
+
+
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
     """
+
     def post(self, request):
         # TO DO 发送消息
         result = {
@@ -189,13 +194,13 @@ class MessagesView(View):
             pos_y = request_data['position']['pos_y']
             title = request_data['title']
             content = request_data['content']
-            author = models.User.objects.filter(id = author_id)[0]
+            author = models.User.objects.filter(id=author_id)[0]
             message = models.Message.objects.create(
-                pos_x = pos_x,
-                pos_y = pos_y,
-                title = title,
-                content = content,
-                author = author
+                pos_x=pos_x,
+                pos_y=pos_y,
+                title=title,
+                content=content,
+                author=author
             )
             message.save()
             result['state']['msg'] = 'successful'
@@ -221,9 +226,9 @@ class MessagesView(View):
                 "title": "",
                 "content": "",
                 "author": {
-                "author_id": 0,
-                "username": "",
-                "avatar": ""
+                    "author_id": 0,
+                    "username": "",
+                    "avatar": ""
                 },
                 "like": 0,
                 "dislike": 0,
@@ -244,7 +249,7 @@ class MessagesView(View):
             #request_data = demjson.decode(request.body)
             request_data = request.GET.dict()
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id = msg_id)[0]
+            message = models.Message.objects.filter(id=msg_id)[0]
             author = message.author
             result['data']['msg_id'] = message.id
             result['data']['position']['pos_x'] = message.pos_x
@@ -273,7 +278,7 @@ class MessagesView(View):
                 }
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
-                    break   
+                    break
             result['add_data'] = message.add_date
             result['mod_date'] = message.mod_date
             for i, comment in enumerate(message.comment_set.all()):
@@ -286,7 +291,7 @@ class MessagesView(View):
                     break
             result['state']['msg'] = 'successful'
             message.save()
-            #print(result)
+            # print(result)
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
@@ -294,7 +299,6 @@ class MessagesView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
-                    
 
     def put(self, request):
         # TO DO 修改消息
@@ -309,7 +313,7 @@ class MessagesView(View):
         try:
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id = msg_id)[0]
+            message = models.Message.objects.filter(id=msg_id)[0]
             if 'title' in request_data.keys():
                 message.title = request_data['title']
             if 'content' in request_data.keys():
@@ -317,8 +321,8 @@ class MessagesView(View):
             if 'img' in request_data.keys():
                 for img in request_data['img']:
                     message_image = models.MessageImage.objects.create(
-                        img = img['image_url'],
-                        message = message
+                        img=img['image_url'],
+                        message=message
                     )
                     message_image.save()
             message.save()
@@ -331,7 +335,6 @@ class MessagesView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
-
 
     def delete(self, request):
         # TO DO 删除消息
@@ -346,7 +349,7 @@ class MessagesView(View):
         try:
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id = msg_id)[0]
+            message = models.Message.objects.filter(id=msg_id)[0]
             message.delete()
             result['state']['msg'] = 'successful'
             result['data']['msg_id'] = msg_id
@@ -375,14 +378,20 @@ class CommentsView(View):
                 "comment_id": 0
             }
         }
-        user_id = request.POST.get("user_id")
-        content = request.POST.get("content")
-        msg_id = request.POST.get("msg_id")
+        comment = demjson.decode(request.body)
+        # print(comment)
+        # user_id = request.POST.get("user_id")
+        # content = request.POST.get("content")
+        # msg_id = request.POST.get("msg_id")
+        # print(user_id, msg_id)
         try:
+            user = models.User.objects.filter(id=comment['user_id'])[0]
+            mess = models.Message.objects.filter(id=comment['msg_id'])[0]
             comm = models.Comment.objects.create(
-                msg=msg_id,
-                content=content,
-                author=user_id)
+                msg=mess,
+                content=comment['content'],
+                author=user)
+            comm.save()
             result['state']['msg'] = 'successful'
             result['data']['comment_id'] = comm.id
         except:
@@ -399,11 +408,11 @@ class CommentsView(View):
                 "content": "",
                 "like": 0,
                 "who_like": [
-                {
-                    "user_id": 0,
-                    "username": "",
-                    "avatar": ""
-                }
+                    {
+                        "user_id": 0,
+                        "username": "",
+                        "avatar": ""
+                    }
                 ],
                 "add_date": "",
                 "mod_date": ""
@@ -420,13 +429,13 @@ class CommentsView(View):
                 comment = comment.first()
                 if comment.deleted != 1:
                     result['data']['comment_id'] = comment.id
-                    result['data']['msg_id'] = comment.msg
-                    result['data']['author_id'] = comment.author
+                    result['data']['msg_id'] = str(comment.msg)
+                    result['data']['author_id'] = str(comment.author)
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like
-                    result['data']['add_date'] = comment.add_date
-                    result['data']['mod_date'] = comment.mod_date
-                    who_like = models.Comment.objects.all()
+                    result['data']['add_date'] = str(comment.add_date)
+                    result['data']['mod_date'] = str(comment.mod_date)
+                    who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
                             "user_id": i.id,
@@ -434,8 +443,11 @@ class CommentsView(View):
                             "avatar": i.avatar,
                         }
                         result['who_like'].append(oneLike)
+                    result['state']['msg'] = 'successful'
         except:
             pass
+        result = demjson.decode(str(result))
+        # result = json.
         return JsonResponse(result)
 
     def put(self, request):
@@ -465,21 +477,24 @@ class CommentsView(View):
         return JsonResponse(result)
 # jhc-----------------------------------
 
+
 """
 Image模块由SchroDr绝赞划水中！
 """
+
+
 class ImagesView(View):
     """
     本模块用于上传下载图片
     """
 
     def post(self, request):
-        #TO DO 上传图片
+        # TO DO 上传图片
         result = {
-            "data":{
+            "data": {
                 "image_url": ""
             },
-            "state":{
+            "state": {
                 "msg": ""
             }
         }
@@ -487,11 +502,11 @@ class ImagesView(View):
             image_file = request.FILES.get("image")
             image_type = request.POST.get("type")
             image = models.Image.objects.create(
-                img = image_file,
-                type = image_type
+                img=image_file,
+                type=image_type
             )
             image.save()
-            result['data']['image_url'] = image.img.url 
+            result['data']['image_url'] = image.img.url
             result['state']['msg'] = 'successful'
             return JsonResponse(result)
         except Exception as e:
@@ -500,7 +515,6 @@ class ImagesView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
-        
 
     def get(self, request):
         # TO DO 返回图片
@@ -510,7 +524,7 @@ class ImagesView(View):
             return FileResponse(open(url, 'rb'))
         except Exception as e:
             result = {
-                "state":{
+                "state": {
                     "msg": ""
                 }
             }
@@ -518,7 +532,7 @@ class ImagesView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
-        
+
 
 def login(request):
     # TO DO 登陆
@@ -536,12 +550,13 @@ def vericode(request):
         request_data = demjson.decode(request.body)
         phone_number = request_data['phone_number']
 
-        client = AcsClient('LTAIFp0FVf7njxtN', 'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
+        client = AcsClient('LTAIFp0FVf7njxtN',
+                           'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
         request = CommonRequest()
         request.set_accept_format('json')
         request.set_domain('dysmsapi.aliyuncs.com')
         request.set_method('POST')
-        request.set_protocol_type('https') # https | http
+        request.set_protocol_type('https')  # https | http
         request.set_version('2017-05-25')
         request.set_action_name('SendSms')
 
@@ -561,7 +576,6 @@ def vericode(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
-    
 
 
 """
