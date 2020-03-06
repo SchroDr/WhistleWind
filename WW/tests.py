@@ -360,7 +360,7 @@ class ImagesModelTests(TestCase):
             "image": '',
             "type": "universal",
         }
-        with open('media/pic/65105861_p0.jpg', 'rb') as f:
+        with open('media/pic/rua.jpg', 'rb') as f:
             request_data['image'] = f
             response = self.c.post(
                 '/ww/images/', data=request_data)
@@ -421,14 +421,14 @@ class OtherModelTests(TestCase):
                     )
                     comment.save()
 
-    # def test_vericode_works_successfully(self):
-    #     """
-    #     用于测试发送图片是否正常工作
-    #     """
-    #     request_data = {
-    #         "phone_number": '15910558152'
-    #     }
-    #     response = self.c.post(
-    #         '/ww/users/vericode/', data=request_data, content_type='application/json')
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json()['state']['msg'], 'successful')
+    def test_vericode_works_successfully(self):
+        """
+        用于测试发送图片是否正常工作
+        """
+        request_data = {
+            "phone_number": '15910558152'
+        }
+        response = self.c.post(
+            '/ww/users/vericode/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
