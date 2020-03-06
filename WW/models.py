@@ -28,7 +28,7 @@ class User(models.Model):
         "self", verbose_name="关注用户", through="Followship", symmetrical=False, related_name='follow_set')
     friends = models.ManyToManyField(
         "self", verbose_name="好友", through="Friendship", symmetrical=False, related_name='friend_set')
-    introduction = models.TextField("简介", default="Hello，World")
+    introduction = models.TextField("简介", default="Hello, World")
     deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
