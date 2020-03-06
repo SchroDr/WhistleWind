@@ -55,8 +55,10 @@ class UsersView(View):
                 result['data'] = {'user_id': user_id}
                 result['state']['msg'] = 'successful'
                 return JsonResponse(result)
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
 
     def get(self, request):
@@ -119,8 +121,10 @@ class UsersView(View):
                 result['data']['comments'].append(
                     {'comment_id': i.id, 'content': i.content})
             result['state']['msg'] = 'successful'
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
     def put(self, request):

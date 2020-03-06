@@ -59,16 +59,15 @@ class UsersModelTests(TestCase):
             "veri_code": exrex.getone(r"\d{4}"),
             "password": exrex.getone(r"[A-Za-z0-9_]{6,18}")
         }
-
-        response = self.c.post(
-            '/ww/users/', data=request_data, content_type='application/json')
+        print(request_data)
+        response = self.c.post('/ww/users/', data=request_data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['user_id'], 1)
 
     def test_get_user_messages_works_successfully(self):
         request_data = {
-            'user_id': random.randint(12, 19)
+            'user_id': models.User.objects.all()[0].id
         }
 
         response = self.c.get('/ww/users/', data=request_data,
@@ -80,7 +79,7 @@ class UsersModelTests(TestCase):
 
     def test_update_user_messages_works_successfully(self):
         request_data = {
-            "user_id": random.randint(32, 40),
+            "user_id": models.User.objects.all()[0].id,
             "username": "张三",
             "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
             "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
@@ -289,7 +288,6 @@ class CommentsModelTests(TestCase):
         request_data = {
             "comment_id": models.Comment.objects.all()[0].id
         }
-        print(request_data)
         response = self.c.get(
             '/ww/comments/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
