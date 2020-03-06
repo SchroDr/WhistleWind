@@ -546,7 +546,7 @@ def vericode(request):
         request.set_action_name('SendSms')
 
         request.add_query_param('RegionId', "cn-hangzhou")
-        request.add_query_param('PhoneNumbers', "13521623093")
+        request.add_query_param('PhoneNumbers', phone_number)
         request.add_query_param('SignName', "顺呼验证码")
         request.add_query_param('TemplateCode', "SMS_158051516")
         code = exrex.getone(r"\d{4}")
