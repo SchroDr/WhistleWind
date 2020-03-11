@@ -59,8 +59,9 @@ class UsersModelTests(TestCase):
             "veri_code": exrex.getone(r"\d{4}"),
             "password": exrex.getone(r"[A-Za-z0-9_]{6,18}")
         }
-        print(request_data)
-        response = self.c.post('/ww/users/', data=request_data)
+        # print(request_data)
+        response = self.c.post(
+            '/ww/users/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['user_id'], 1)

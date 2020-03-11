@@ -41,8 +41,9 @@ class UsersView(View):
             },
         }
         try:
-            phone_number = request.POST.get("phone_number")
-            password = request.POST.get("password")
+            post = demjson.decode(request.body)
+            phone_number = post["phone_number"]
+            password = post["password"]
             # veri_code = request.POST.get("veri_code")
             user = models.User.objects.filter(phonenumber=phone_number)
             if len(user) == 1:  # 已存在
