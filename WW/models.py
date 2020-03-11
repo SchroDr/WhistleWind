@@ -50,7 +50,7 @@ class Message(models.Model):
     title = models.CharField("信息标题", max_length=62)
     content = models.TextField("信息内容")
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               verbose_name="该信息作者", related_name='message_author_set')
+                               verbose_name="该信息作者", related_name='message_set')
     like = models.IntegerField("点赞数", default=0)
     dislike = models.IntegerField("点踩数", default=0)
     who_like = models.ManyToManyField(
@@ -78,7 +78,7 @@ class Comment(models.Model):
     msg = models.ForeignKey(Message, on_delete=models.CASCADE,
                             verbose_name="该评论所属信息", default='')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               verbose_name="该评论所属用户", related_name='comment_author_set', default='')
+                               verbose_name="该评论所属用户", related_name='comment_set', default='')
     content = models.TextField("评论内容", default="Hello")
     like = models.IntegerField("点赞数", default=0)
     who_like = models.ManyToManyField(

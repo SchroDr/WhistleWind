@@ -11,6 +11,56 @@ from django.test.utils import setup_test_environment
 yyy老师曾曰：开发的第一步是做先做好测试！
 """
 
+def createTestDatabase():
+    """
+    初始化测试数据库
+    向测试数据库中添加10个用户信息、每个用户有10条信息，每个信息有10条评论
+    """
+    #创建是个用户
+    for i in range(10):
+        #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
+        # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
+        email = exrex.getone(
+            r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
+        phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
+        password = "mimajiusuiyile123!"
+        user = models.User.objects.create(
+            email=email,
+            phonenumber=phonenumber,
+            password=password)
+        user.save()
+    users = models.User.objects.all()
+    #为每个用户增加10条消息
+    for user in users:
+        for i in range(10):
+            message = models.Message.objects.create(
+                pos_x=63.9734911653,
+                pos_y=86.36421952785102,
+                title="Test",
+                content="Heeeeeeeeeeeeeeeelo",
+                author=user
+            )
+            message.save()
+    messages = models.Message.objects.all()
+    #为每条增加10条评论
+    for mesaage in messages:
+        for i in range(5):
+            comment = models.Comment.objects.create(
+                msg=message,
+                author=random.choice(users),
+                content="Ruaaaaaaaa"
+            )
+            comment.save()
+    #为每个用户增加9个关注
+    for user in users:
+        for follow in users:
+            followship = models.Followship.objects.create(
+                followed_user = follow,
+                fan = user
+            )
+            followship.save()
+    
+
 
 class UsersModelTests(TestCase):
     """
@@ -20,38 +70,7 @@ class UsersModelTests(TestCase):
     c = Client()
 
     def setUp(self):
-        """
-        初始化测试数据库
-        向测试数据库中添加10个用户信息、50个消息、250条评论
-        """
-        for i in range(10):
-            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
-            email = exrex.getone(
-                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
-            password = "mimajiusuiyile123!"
-            user = models.User.objects.create(
-                email=email,
-                phonenumber=phonenumber,
-                password=password)
-            user.save()
-            for i in range(5):
-                message = models.Message.objects.create(
-                    pos_x=63.9734911653,
-                    pos_y=86.36421952785102,
-                    title="Test",
-                    content="Heeeeeeeeeeeeeeeelo",
-                    author=user
-                )
-                message.save()
-                for i in range(5):
-                    comment = models.Comment.objects.create(
-                        msg=message,
-                        author=user,
-                        content="Ruaaaaaaaa"
-                    )
-                    comment.save()
+        createTestDatabase()
 
     def test_register_works_successfully(self):
         request_data = {
@@ -59,24 +78,71 @@ class UsersModelTests(TestCase):
             "veri_code": exrex.getone(r"\d{4}"),
             "password": exrex.getone(r"[A-Za-z0-9_]{6,18}")
         }
-        # print(request_data)
         response = self.c.post(
             '/ww/users/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['user_id'], 1)
 
-    def test_get_user_messages_works_successfully(self):
+    def test_get_all_user_messages_works_successfully(self):
+        user = models.User.objects.all()[0]
         request_data = {
-            'user_id': models.User.objects.all()[0].id
+            'user_id': user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1
         }
 
         response = self.c.get('/ww/users/', data=request_data,
                               content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
-        self.assertEqual(response.json()['data']
-                         ['user_id'], request_data['user_id'])
+        self.assertEqual(response.json()['data']['user_id'], request_data['user_id'])
+        self.assertEqual(len(response.json()['data']['follows']), len(user.follows))
+        self.assertEqual(len(response.json()['data']['follwers']), len(user.follow_set))
+        self.assertEqual(len(response.json()['data']['messages']), len(user.message_set))
+        self.assertEqual(len(response.json()['data']['comments']), len(user.comment_set))
+
+
+    def test_get_part_user_messages_works_successfully(self):
+        user = models.User.objects.all()[0]
+        request_data = {
+            'user_id': user.id,
+            "follows_number": 5,
+            "followers_number": 5,
+            "messages_number": 5,
+            "comments_number": 5
+        }
+
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['user_id'], request_data['user_id'])
+        self.assertEqual(len(response.json()['data']['follows']), 5)
+        self.assertEqual(len(response.json()['data']['follwers']), 5)
+        self.assertEqual(len(response.json()['data']['messages']), 5)
+        self.assertEqual(len(response.json()['data']['comments']), 5)
+
+
+    def test_get_minimal_user_messages_works_successfully(self):
+        request_data = {
+            'user_id': models.User.objects.all()[0].id,
+            "follows_number": 0,
+            "followers_number": 0,
+            "messages_number": 0,
+            "comments_number": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['user_id'], request_data['user_id'])
+        self.assertEqual(len(response.json()['data']['follows']), 0)
+        self.assertEqual(len(response.json()['data']['follwers']), 0)
+        self.assertEqual(len(response.json()['data']['messages']), 0)
+        self.assertEqual(len(response.json()['data']['comments']), 0)
 
     def test_update_user_messages_works_successfully(self):
         request_data = {
@@ -90,8 +156,7 @@ class UsersModelTests(TestCase):
                               content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
-        self.assertEqual(response.json()['data']
-                         ['user_id'], request_data['user_id'])
+        self.assertEqual(response.json()['data']['user_id'], request_data['user_id'])
 
 
 class MessagesModelTests(TestCase):
@@ -102,38 +167,8 @@ class MessagesModelTests(TestCase):
     c = Client()
 
     def setUp(self):
-        """
-        初始化测试数据库
-        向测试数据库中添加10个用户信息、50个消息、250条评论
-        """
-        for i in range(10):
-            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
-            email = exrex.getone(
-                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
-            password = "mimajiusuiyile123!"
-            user = models.User.objects.create(
-                email=email,
-                phonenumber=phonenumber,
-                password=password)
-            user.save()
-            for i in range(5):
-                message = models.Message.objects.create(
-                    pos_x=63.9734911653,
-                    pos_y=86.36421952785102,
-                    title="Test",
-                    content="Heeeeeeeeeeeeeeeelo",
-                    author=user
-                )
-                message.save()
-                for i in range(5):
-                    comment = models.Comment.objects.create(
-                        msg=message,
-                        author=user,
-                        content="Ruaaaaaaaa"
-                    )
-                    comment.save()
+        createTestDatabase()
+
 
     def test_post_messages_works_successfully(self):
         """
@@ -233,39 +268,9 @@ class CommentsModelTests(TestCase):
     c = Client()
 
     def setUp(self):
-        """
-        初始化测试数据库
-        向测试数据库中添加10个用户信息、50个消息、250条评论
-        """
-        for i in range(10):
-            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
-            email = exrex.getone(
-                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
-            password = "mimajiusuiyile123!"
-            user = models.User.objects.create(
-                email=email,
-                phonenumber=phonenumber,
-                password=password)
-            user.save()
-            for i in range(5):
-                message = models.Message.objects.create(
-                    pos_x=63.9734911653,
-                    pos_y=86.36421952785102,
-                    title="Test",
-                    content="Heeeeeeeeeeeeeeeelo",
-                    author=user
-                )
-                message.save()
-                for i in range(5):
-                    comment = models.Comment.objects.create(
-                        msg=message,
-                        author=user,
-                        content="Ruaaaaaaaa"
-                    )
-                    comment.save()
+        createTestDatabase()
 
+        
     def test_post_comments_works_successfully(self):
         """
         用于测试发送评论是否正常工作
@@ -319,38 +324,7 @@ class ImagesModelTests(TestCase):
     c = Client()
 
     def setUp(self):
-        """
-        初始化测试数据库
-        向测试数据库中添加10个用户信息、50个消息、250条评论
-        """
-        for i in range(10):
-            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
-            email = exrex.getone(
-                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
-            password = "mimajiusuiyile123!"
-            user = models.User.objects.create(
-                email=email,
-                phonenumber=phonenumber,
-                password=password)
-            user.save()
-            for i in range(5):
-                message = models.Message.objects.create(
-                    pos_x=63.9734911653,
-                    pos_y=86.36421952785102,
-                    title="Test",
-                    content="Heeeeeeeeeeeeeeeelo",
-                    author=user
-                )
-                message.save()
-                for i in range(5):
-                    comment = models.Comment.objects.create(
-                        msg=message,
-                        author=user,
-                        content="Ruaaaaaaaa"
-                    )
-                    comment.save()
+        createTestDatabase()
 
     def test_post_images_works_successfully(self):
         """
@@ -388,38 +362,7 @@ class OtherModelTests(TestCase):
     c = Client()
 
     def setUp(self):
-        """
-        初始化测试数据库
-        向测试数据库中添加10个用户信息、50个消息、250条评论
-        """
-        for i in range(10):
-            #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
-            email = exrex.getone(
-                r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
-            phonenumber = exrex.getone(r"1[34578][0-9]{9}$")
-            password = "mimajiusuiyile123!"
-            user = models.User.objects.create(
-                email=email,
-                phonenumber=phonenumber,
-                password=password)
-            user.save()
-            for i in range(5):
-                message = models.Message.objects.create(
-                    pos_x=63.9734911653,
-                    pos_y=86.36421952785102,
-                    title="Test",
-                    content="Heeeeeeeeeeeeeeeelo",
-                    author=user
-                )
-                message.save()
-                for i in range(5):
-                    comment = models.Comment.objects.create(
-                        msg=message,
-                        author=user,
-                        content="Ruaaaaaaaa"
-                    )
-                    comment.save()
+        createTestDatabase()
 
     def test_vericode_works_successfully(self):
         """

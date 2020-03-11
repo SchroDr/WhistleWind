@@ -218,7 +218,6 @@ class MessagesView(View):
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
-            #print('traceback.format_exc():\n%s' % traceback.format_exc())
             return JsonResponse(result)
 
     def get(self, request):
@@ -543,7 +542,37 @@ class ImagesView(View):
 
 def login(request):
     # TO DO 登陆
-    pass
+    result = {
+        "state": {
+            "msg": ""
+        },
+        "data": {
+            "cookie": "",
+            "user_id": 0
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        phone_number = request_data['phone_number']
+        password = request_data['password']
+        user = models.User.objects.filter(phonenumber = phone_number)[0]
+        if user.password == 'password':
+            result['state']['msg'] = 'successful'
+            result['data']['user_id'] = user.id
+        return JsonResponse(result)    
+    except IndexError as e:
+        result['state']['msg'] = 'nonexistent'
+        result.pop('data')
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
+    except Exception as e:
+        result['state']['msg'] = 'failed'
+        result.pop('data')
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
+
 
 
 def vericode(request):
@@ -571,7 +600,7 @@ def vericode(request):
         request.add_query_param('PhoneNumbers', phone_number)
         request.add_query_param('SignName', "顺呼验证码")
         request.add_query_param('TemplateCode', "SMS_158051516")
-        code = exrex.getone(r"\d{4}")
+        code = exrex.getone(r"\d{6}")
         request.add_query_param('TemplateParam', "{'code': '%s'}" % code)
 
         response = client.do_action(request)
@@ -583,6 +612,7 @@ def vericode(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
 
 
 """
