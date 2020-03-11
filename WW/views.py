@@ -556,10 +556,13 @@ def login(request):
         phone_number = request_data['phone_number']
         password = request_data['password']
         user = models.User.objects.filter(phonenumber = phone_number)[0]
-        if user.password == 'password':
+        if user.password == password:
             result['state']['msg'] = 'successful'
             result['data']['user_id'] = user.id
-        return JsonResponse(result)    
+            return JsonResponse(result)    
+        else:
+            result['state']['msg'] = ['wrong']
+            return JsonResponse(result)
     except IndexError as e:
         result['state']['msg'] = 'nonexistent'
         result.pop('data')
@@ -575,7 +578,7 @@ def login(request):
 
 
 
-def vericode(request):
+def requestVericode(request):
     # TO DO 向用户手机发送验证码，并将验证码存入数据库中
     result = {
         "state": {
@@ -609,12 +612,33 @@ def vericode(request):
         result['state']['msg'] = 'successful'
         return JsonResponse(result)
     except Exception as e:
+        result['state']['msg'] = 'failed'
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
-
-
+def testVericode(request):
+    #TO DO 验证验证码是否正确
+    result = {
+        "state":{
+            "msg":""
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        phone_number = request_data['phone_number']
+        vericode = request_data['vericode']
+        if vericode == cache.get(phone_number):
+            result['state']['msg'] = 'successful'
+            return JsonResponse(result)
+        else:
+            result['state']['msg'] = 'wrong'
+            return JsonResponse(result)
+    except Exception as e:
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 """
 以下函数皆为废弃接口，仅用于参考
 """

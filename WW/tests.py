@@ -5,6 +5,7 @@ from . import models
 from django.test import TestCase, Client
 from django.http import QueryDict
 from django.test.utils import setup_test_environment
+from django.core.cache import cache
 
 """
 本项目可喜可贺地引入tests模块！
@@ -364,14 +365,39 @@ class OtherModelTests(TestCase):
     def setUp(self):
         createTestDatabase()
 
-    def test_vericode_works_successfully(self):
+    # def test_request_and_testvericode_works_successfully(self):
+    #     """
+    #     用于测试发送图片是否正常工作
+    #     """
+    #     phone_number = '13521623093'
+    #     request_data = {
+    #         "phone_number": phone_number
+    #     }
+    #     response = self.c.post(
+    #         '/ww/request_vericode/', data=request_data, content_type='application/json')
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(response.json()['state']['msg'], 'successful')
+    #     request_data = {
+    #         "phone_number": '13521623093',
+    #         "vericode": cache.get(phone_number)
+    #     }
+    #     print(request_data['vericode'])
+    #     response = self.c.post(
+    #         '/ww/test_vericode/', data=request_data, content_type='application/json')
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(response.json()['state']['msg'], 'successful')
+
+    def test_login_works_successfully(self):
         """
-        用于测试发送图片是否正常工作
+        用于测试登陆功能是否正常工作
         """
+        user = models.User.objects.all()[0]
         request_data = {
-            "phone_number": '15910558152'
+            "phone_number": user.phonenumber,
+            "password": user.password
         }
         response = self.c.post(
-            '/ww/users/vericode/', data=request_data, content_type='application/json')
+            '/ww/users/login/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['user_id'], user.id)
