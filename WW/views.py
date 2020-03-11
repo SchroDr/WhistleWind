@@ -138,24 +138,26 @@ class UsersView(View):
                 "user_id": 0
             }
         }
-        # print(json.dumps(str(request.body, encoding='utf-8')))
         put = demjson.decode(request.body)
-        # put = json.loads(json.dumps(str(request.body, encoding='utf-8')))
-        # put = QueryDict(str(request.body, encoding='utf-8'))
         user_id = put['user_id']
-        username = put['username']
-        email = put['email']
-        phonenumber = put['phonenumber']
-        avatar = put['avatar']
-        introduction = put['introduction']
+        # username = put['username']
+        # email = put['email']
+        # phonenumber = put['phonenumber']
+        # avatar = put['avatar']
+        # introduction = put['introduction']
         user = models.User.objects.filter(id=user_id)
         if len(user) == 1:
             # try:
-            user.first().username = username
-            user.first().email = email
-            user.first().phonenumber = phonenumber
-            user.first().avatar = avatar
-            user.first().introduction = introduction
+            if 'username' in put:
+                user.first().username = put['username']
+            if 'email' in put:
+                user.first().email = put['email']
+            if 'phonenumber' in put:
+                user.first().phonenumber = put['phonenumber']
+            if 'avatar' in put:
+                user.first().avatar = put['avatar']
+            if 'introduction' in put:
+                user.first().introduction = put['introduction']
             user.first().save()
             result['state']['msg'] = 'successful'
             result['data']['user_id'] = user_id
