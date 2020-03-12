@@ -64,31 +64,33 @@ class UsersView(View):
 
     def get(self, request):
         # TO DO 获取用户信息
+        default_number = 10  # 没有请求数据默认返回数量
         result = {
-            'data': {
-                'user_id': 0,
-                'username': '',
-                'email': '',
-                'phonenumber': '',
-                'avatar': '',
-                'introduction': '',
-                'follows': [],
-                'followers': [],
-                'friends': [],
-                'messages': [],
-                'comments': []
+            "data": {
+                "username": "",
+                "email": "",
+                "phonenumber": "",
+                "avatar": "",
+                "introduction": "",
+                "follows": [],
+                "followers": [],
+                "messages": [],
+                "comments": [],
+                "user_id": 0
             },
-            'state':
-                {
-                    'msg': 'failed'
+            "state": {
+                "msg": "failed"
             }
-
         }
         try:
             user_id = request.GET.get('user_id')
+            follows_number = request.GET.get('follows_number')
+            followers_number = request.GET.get('followers_number')
+            messages_number = request.GET.get('messages_number')
+            comments_number = request.GET.get('comments_number')
+            # -----------------------------------------------------
             userInfo = models.User.objects.filter(id=user_id)
             userInfo = userInfo.first()
-            # userInfo = userInfo.first()
             result['data']['user_id'] = int(user_id)
             result['data']['username'] = userInfo.username
             result['data']['email'] = userInfo.email
@@ -97,35 +99,78 @@ class UsersView(View):
             result['data']['introduction'] = userInfo.introduction
             # 关注的人
             follows = models.Followship.objects.filter(fan=user_id)
-            # follows = follows[0:10]
+            if follows_number != None and int(follows_number) != -1:
+                follows = follows[0:int(follows_number)]
+            elif int(follows_number) == -1 or len(follows) <= default_number:
+                follows = follows
+            else:
+                follows = follows[0:default_number]
             for i in follows:
-                oneFoll = models.User.objects.get(id=i.followed_user)
+                oneFoll = models.User.objects.get(id=str(i.followed_user))
                 result['data']['follows'].append(
-                    {'user_id': i.followed_user, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
+                    {
+                        "user_id": str(i.followed_user),
+                        "username": oneFoll.username,
+                        "avatar": str(oneFoll.avatar)
+                    }
+                )
             # 粉丝
             followers = models.Followship.objects.filter(followed_user=user_id)
-            # followers = followers[0:10]
+
+            if followers_number != None and int(followers_number) != -1:
+                followers = followers[0:int(followers_number)]
+            elif int(followers_number) == -1 or len(followers) <= default_number:
+                followers = followers
+            else:
+                followers = followers[0:default_number]
             for i in followers:
-                oneFoll = models.User.objects.get(id=i.fan)
-                result['data']['follows'].append(
-                    {'user_id': i.fan, 'username': oneFoll.username, 'avatar': oneFoll.avatar})
-            # 朋友
-            # friend1 = models.Friendship.objects.filter(initiator=user_id)
-            # friend2 = models.Friendship.objects.filter(recipient=user_id)
-            # messages
-            messages = models.Message.objects.filter(author=user_id)
+                oneFoll = models.User.objects.get(id=str(i.fan))
+                result['data']['followers'].append(
+                    {
+                        "user_id": str(i.fan),
+                        "username": oneFoll.username,
+                        "avatar": str(oneFoll.avatar)
+                    }
+                )
+            # 信息
+            messages = models.Message.objects.filter(
+                author=user_id).order_by('-add_date')
+            if messages_number != None and int(messages_number) != -1:
+                messages = messages[0:int(messages_number)]
+            elif int(messages_number) == -1 or len(messages) <= default_number:
+                messages = messages
+            else:
+                messages = messages[0:default_number]
             for i in messages:
                 result['data']['messages'].append(
-                    {'message_id': i.id, 'title': i.title, 'content': i.content})
-            comments = models.Comment.objects.filter(author=user_id)
-            for i in comments:
+                    {
+                        "message_id": str(i.id),
+                        "title": i.title,
+                        "content": i.content
+                    }
+                )
+            # 评论
+            comments = models.Comment.objects.filter(
+                author=user_id).order_by('-add_date')
+            if comments_number != None and int(comments_number) != -1:
+                comments = comments[0:int(comments_number)]
+            elif int(comments_number) == -1 or len(comments) <= default_number:
+                comments = comments
+            else:
+                comments = comments[0:default_number]
+            for i in messages:
                 result['data']['comments'].append(
-                    {'comment_id': i.id, 'content': i.content})
+                    {
+                        "comment_id": str(i.id),
+                        "content": i.content
+                    }
+                )
             result['state']['msg'] = 'successful'
         except Exception as e:
             result['state']['msg'] = 'failed'
-            print('\nrepr(e):\t', repr(e))
-            print('traceback.print_exc():', traceback.print_exc())
+            # print('\nrepr(e):\t', repr(e))
+            # print('traceback.print_exc():', traceback.print_exc())
+        print(result)
         return JsonResponse(result)
 
     def put(self, request):
@@ -555,11 +600,11 @@ def login(request):
         request_data = demjson.decode(request.body)
         phone_number = request_data['phone_number']
         password = request_data['password']
-        user = models.User.objects.filter(phonenumber = phone_number)[0]
+        user = models.User.objects.filter(phonenumber=phone_number)[0]
         if user.password == password:
             result['state']['msg'] = 'successful'
             result['data']['user_id'] = user.id
-            return JsonResponse(result)    
+            return JsonResponse(result)
         else:
             result['state']['msg'] = ['wrong']
             return JsonResponse(result)
@@ -575,7 +620,6 @@ def login(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
-
 
 
 def requestVericode(request):
@@ -617,11 +661,12 @@ def requestVericode(request):
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 def testVericode(request):
-    #TO DO 验证验证码是否正确
+    # TO DO 验证验证码是否正确
     result = {
-        "state":{
-            "msg":""
+        "state": {
+            "msg": ""
         }
     }
     try:
@@ -639,6 +684,8 @@ def testVericode(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
+
 """
 以下函数皆为废弃接口，仅用于参考
 """
