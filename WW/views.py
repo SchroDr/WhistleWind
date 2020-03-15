@@ -158,7 +158,7 @@ class UsersView(View):
                 comments = comments
             else:
                 comments = comments[0:default_number]
-            for i in messages:
+            for i in comments:
                 result['data']['comments'].append(
                     {
                         "comment_id": str(i.id),

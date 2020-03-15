@@ -46,10 +46,11 @@ def createTestDatabase():
     messages = models.Message.objects.all()
     # 为每条增加10条评论
     for mesaage in messages:
-        for i in range(5):
+        for i in range(10):
+            user = random.choice(users)
             comment = models.Comment.objects.create(
                 msg=message,
-                author=random.choice(users),
+                author=user,
                 content="Ruaaaaaaaa"
             )
             comment.save()
@@ -102,13 +103,13 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['user_id'], request_data['user_id'])
         self.assertEqual(
-            len(response.json()['data']['follows']), len(user.follows))
+            len(response.json()['data']['follows']), len(user.follows.all()))
         self.assertEqual(
-            len(response.json()['data']['followers']), len(user.follow_set))
+            len(response.json()['data']['followers']), len(user.follow_set.all()))
         self.assertEqual(
-            len(response.json()['data']['messages']), len(user.message_set))
+            len(response.json()['data']['messages']), len(user.message_set.all()))
         self.assertEqual(
-            len(response.json()['data']['comments']), len(user.comment_set))
+            len(response.json()['data']['comments']), len(user.comment_set.all()))
 
     def test_get_part_user_messages_works_successfully(self):
         user = models.User.objects.all()[0]
