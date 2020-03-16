@@ -626,8 +626,12 @@ def requestVericode(request):
     result = {
         "state": {
             "msg": ""
+        },
+        "data": {
+            "time_limit": ''
         }
     }
+    time_limit = 300
     try:
         request_data = demjson.decode(request.body)
         phone_number = request_data['phone_number']
@@ -651,10 +655,12 @@ def requestVericode(request):
 
         response = client.do_action(request)
         #print(str(response, encoding = 'utf-8'))
-        cache.set(phone_number, code, 1800)
+        cache.set(phone_number, code, time_limit)
         result['state']['msg'] = 'successful'
+        result['data']['time_limit'] == time_limit
         return JsonResponse(result)
     except Exception as e:
+        result.pop('data')
         result['state']['msg'] = 'failed'
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
