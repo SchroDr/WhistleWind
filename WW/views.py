@@ -168,8 +168,8 @@ class UsersView(View):
             result['state']['msg'] = 'successful'
         except Exception as e:
             result['state']['msg'] = 'failed'
-            # print('\nrepr(e):\t', repr(e))
-            # print('traceback.print_exc():', traceback.print_exc())
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
     def put(self, request):
