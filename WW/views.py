@@ -605,7 +605,7 @@ def login(request):
             result['data']['user_id'] = user.id
             return JsonResponse(result)
         else:
-            result['state']['msg'] = ['wrong']
+            result['state']['msg'] = 'wrong'
             return JsonResponse(result)
     except IndexError as e:
         result['state']['msg'] = 'nonexistent'
