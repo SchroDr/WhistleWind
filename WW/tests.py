@@ -279,6 +279,21 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['msg_id'], request_data['msg_id'])
 
+    def test_get_a_set_messages_works_successfully(self):
+        #TO DO 测试能否正确获取一组信息
+        pass
+
+    def test_give_a_like_to_a_message_works_successfully(self):
+        #TO DO 测试能否正确点赞
+        pass
+
+    def test_give_a_dislike_to_a_message_works_successfully(self):
+        #TO DO 测试能否正确点踩
+        pass
+
+    def test_get_mentioned_messages_works_successfully(self):
+        #TO DO 测试能否正确获取被@的信息
+        pass
 
 class CommentsModelTests(TestCase):
     """
@@ -333,6 +348,10 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['comment_id'], request_data['comment_id'])
+    
+    def test_get_mentioned_comments_works_successfully(self):
+        #TO DO 测试能否正确获取被@的信息
+        pass
 
 
 class ImagesModelTests(TestCase):
@@ -419,3 +438,7 @@ class OtherModelTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']['user_id'], user.id)
+
+    def test_get_static_resources_successfully(self):
+        #TO DO 测试获取静态资源是否正常工作
+        pass

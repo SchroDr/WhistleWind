@@ -26,8 +26,6 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 # jhc work----------------------------------------------------------------
-
-
 class UsersView(View):
     """
     本模块用于对用户信息进行增删改查
@@ -237,8 +235,6 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
-
-
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
@@ -547,8 +543,6 @@ class CommentsView(View):
 """
 Image模块由SchroDr绝赞划水中！
 """
-
-
 class ImagesView(View):
     """
     本模块用于上传下载图片
@@ -707,11 +701,33 @@ def testVericode(request):
         return JsonResponse(result)
 
 
+def messagesSet(request):
+    #TO DO 根据地理信息等返回一组消息
+    pass
+
+def messagesLike(request):
+    #TO DO 给消息点赞
+    pass
+
+def messagesDislike(request):
+    #TO DO 给消息点踩
+    pass
+
+def messagesMentioned(request):
+    #TO DO 查看被@的信息
+    pass
+
+def commentsMentioned(request):
+    #TO DO 查看被@的评论
+    pass
+
+def staticResources(request):
+    #TO DO 获取静态资源
+    pass
+
 """
 以下函数皆为废弃接口，仅用于参考
 """
-
-
 def login_old(request):
     result = {
         'isSucceed': 0,
