@@ -23,7 +23,7 @@ class User(models.Model):
         "用户名", max_length=62, null=False, default="WWer")
     password = models.CharField("密码", max_length=32, null=False)
     avatar = models.CharField("存储头像地址", null=False,
-                              max_length=500, default="pic/rua.jpg")
+                              max_length=500, default="media/pic/rua.jpg")
     follows = models.ManyToManyField(
         "self", verbose_name="关注用户", through="Followship", symmetrical=False, related_name='follow_set')
     friends = models.ManyToManyField(
