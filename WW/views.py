@@ -86,7 +86,7 @@ class UsersView(View):
         user_id = request.GET.get('user_id')
         follows_start = int(request.GET.get('follows_start'))
         follows_number = int(request.GET.get('follows_number'))
-        followers_start = int(request.GET.get('follwers_start'))
+        followers_start = int(request.GET.get('followers_start'))
         followers_number = int(request.GET.get('followers_number'))
         messages_start = int(request.GET.get('messages_start'))
         messages_number = int(request.GET.get('messages_number'))
@@ -156,7 +156,7 @@ class UsersView(View):
             author=user_id).order_by('-add_date')
         res = self.request_return_user(
             comments, comments_start, comments_number)
-        for i in ResourceWarning:
+        for i in res:
             result['data']['comments'].append(
                 {
                     "comment_id": str(i.id),

@@ -89,11 +89,15 @@ class UsersModelTests(TestCase):
     def test_get_all_user_messages_works_successfully(self):
         user = models.User.objects.all()[0]
         request_data = {
-            'user_id': user.id,
+            "user_id": user.id,
             "follows_number": -1,
             "followers_number": -1,
             "messages_number": -1,
-            "comments_number": -1
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
         }
 
         response = self.c.get('/ww/users/', data=request_data,
@@ -114,11 +118,15 @@ class UsersModelTests(TestCase):
     def test_get_part_user_messages_works_successfully(self):
         user = models.User.objects.all()[0]
         request_data = {
-            'user_id': user.id,
+            "user_id": user.id,
             "follows_number": 5,
             "followers_number": 5,
             "messages_number": 5,
-            "comments_number": 5
+            "comments_number": 5,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
         }
 
         response = self.c.get('/ww/users/', data=request_data,
@@ -133,12 +141,17 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response.json()['data']['comments']), 5)
 
     def test_get_minimal_user_messages_works_successfully(self):
+        user = models.User.objects.all()[0]
         request_data = {
-            'user_id': models.User.objects.all()[0].id,
+            "user_id": user.id,
             "follows_number": 0,
             "followers_number": 0,
             "messages_number": 0,
-            "comments_number": 0
+            "comments_number": 0,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
         }
         response = self.c.get('/ww/users/', data=request_data,
                               content_type='application/json')
