@@ -259,8 +259,7 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
-        self.assertEqual(response.json()['data']
-                         ['msg_id'], request_data['msg_id'])
+        self.assertEqual(response.json()['data']['msg_id'], request_data['msg_id'])
 
     def test_put_messages_works_successfully(self):
         """
@@ -304,20 +303,82 @@ class MessagesModelTests(TestCase):
                          ['msg_id'], request_data['msg_id'])
 
     def test_get_a_set_messages_works_successfully(self):
-        #TO DO 测试能否正确获取一组信息
-        pass
+        """
+        测试能否正确获取一组信息
+        """
+        user = models.User.objects.filter()[0]
+        request_data = {
+            "pos_x": 63.9734911653,
+            "pos_y": 86.36421952785102,
+            "width": 2,
+            "height": 2,
+            "user_id": user.id,
+            "number": 18
+        }
+        response = self.c.get('/ww/messages/set/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertLessEqual(len(response.json()['data']['messages']), 18)
+
 
     def test_give_a_like_to_a_message_works_successfully(self):
-        #TO DO 测试能否正确点赞
-        pass
+        """
+        测试能否正确点赞
+        """
+        user = models.User.objects.filter()[0]
+        message = models.Message.objects.filter()[0]
+        request_data = {
+            "msg_id": message.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/messages/like/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(id = message.id)[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['msg_id'], message.id)
+        self.assertEqual(response.json()['data']['like'], message.like)
+        self.assertEqual(response.json()['data']['dislike'], message.dislike)
+        self.assertIn(user, message.who_like.all())
+
 
     def test_give_a_dislike_to_a_message_works_successfully(self):
-        #TO DO 测试能否正确点踩
-        pass
+        """
+        测试能否正确点踩
+        """
+        user = models.User.objects.filter()[0]
+        message = models.Message.objects.filter()[0]
+        request_data = {
+            "msg_id": message.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/messages/dislike/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(id = message.id)[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['msg_id'], message.id)
+        self.assertEqual(response.json()['data']['like'], message.like)
+        self.assertEqual(response.json()['data']['dislike'], message.dislike)
+        self.assertIn(user, message.who_dislike.all())
 
-    def test_get_mentioned_messages_works_successfully(self):
-        #TO DO 测试能否正确获取被@的信息
-        pass
+    def test_get_all_mentioned_messages_works_successfully(self):
+        """
+        TO DO 测试能否正确获取被@的信息
+        """
+        user = models.User.objects.filter()[0]
+        request_data = {
+            "user_id": user.id,
+            "time_limit": -1,
+            "count_limit": -1
+        }
+        response = self.c.get(
+            '/ww/messages/mentioned', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(len(response.json()['data']['messages'], len(user.message_set.all())))
+
+
 
 class CommentsModelTests(TestCase):
     """
@@ -373,9 +434,24 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['comment_id'], request_data['comment_id'])
     
-    def test_get_mentioned_comments_works_successfully(self):
-        #TO DO 测试能否正确获取被@的信息
-        pass
+    def test_give_a_like_to_a_comment_works_successfully(self):
+        """
+        测试能否正确点赞
+        """
+        user = models.User.objects.filter()[0]
+        comment = models.Comment.objects.filter()[0]
+        request_data = {
+            "comment_id": comment.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/comments/like/', data=request_data, content_type='application/json')
+        comment = models.Comment.objects.filter(id = comment.id)[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['comment_id'], comment.id)
+        self.assertEqual(response.json()['data']['like'], comment.like)
+        self.assertIn(user, comment.who_like.all())
 
 
 class ImagesModelTests(TestCase):
@@ -464,5 +540,12 @@ class OtherModelTests(TestCase):
         self.assertEqual(response.json()['data']['user_id'], user.id)
 
     def test_get_static_resources_successfully(self):
-        #TO DO 测试获取静态资源是否正常工作
-        pass
+        """
+        测试获取静态资源是否正常工作
+        """
+        request_data = {
+            'resource_url': 'media/documents/隐私政策.html'
+        }
+        response = self.c.get('/ww/static_resources/', data=request_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/html')

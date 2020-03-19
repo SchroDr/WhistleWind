@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^messages/mentioned/$', views.messagesMentioned, name='messagesMentioned'),
 
     url(r'^comments/$', views.CommentsView.as_view(), name='comments'),
-    url(r'^comments/mentioned/$', views.commentsMentioned, name='commentsMentioned'),
+    url(r'^comments/like/$', views.commentsLike, name='commentsLike'),
 
     url(r'^images/$', views.ImagesView.as_view(), name='images'),
     url(r'^static_resources/$', views.staticResources, name='staticResources'),

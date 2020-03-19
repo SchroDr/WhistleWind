@@ -667,7 +667,7 @@ def requestVericode(request):
         # print(str(response, encoding = 'utf-8'))
         cache.set(phone_number, code, time_limit)
         result['state']['msg'] = 'successful'
-        result['data']['time_limit'] == time_limit
+        result['data']['time_limit'] = time_limit
         return JsonResponse(result)
     except Exception as e:
         result.pop('data')
@@ -703,27 +703,178 @@ def testVericode(request):
 
 def messagesSet(request):
     #TO DO 根据地理信息等返回一组消息
-    pass
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "messages": [
+            ]
+        }
+    }
+    try:
+        request_data = request.GET.dict()
+        user_id = request_data['user_id']
+        pos_x = float(request_data['pos_x'])
+        pos_y = float(request_data['pos_y'])
+        width = float(request_data['width'])
+        height = float(request_data['height'])
+        number = int(request_data['number'])
+
+        messages = models.Message.objects.filter(
+            pos_x__gte=pos_x-width/2, pos_x__lte=pos_x+width/2,
+            pos_y__gte=pos_y-height/2, pos_y__lte=pos_y+height/2)
+
+        for i, message in enumerate(messages):
+            if i >= number:
+                break
+            message_info = {
+                "msg_id": message.id,
+                "title": message.title,
+                "content": message.content,
+                "img": [
+                ],
+                "author": {
+                    "author_id": message.author.id,
+                    "username": message.author.username,
+                    "avatar": message.author.avatar
+                }
+            }
+            if len(message.messageimage_set.all()) > 0:
+                message['img']['image_url'].append(message.messageimage_set.all()[0].img)
+            result['data']['messages'].append(message_info)
+        result['state']['msg'] = 'successful'
+        print(result)
+        return JsonResponse(result)
+    except Exception as e:
+        result['state']['msg'] = 'failed'
+        result.pop('data')
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
+
 
 def messagesLike(request):
     #TO DO 给消息点赞
-    pass
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "msg_id": 0,
+            "like": 0,
+            "dislike": 0
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        msg_id = request_data['msg_id']
+        user_id = request_data['user_id']
+        message = models.Message.objects.filter(id = msg_id)[0]
+        user = models.User.objects.filter(id = user_id)[0]
+        message.like += 1
+        message.who_like.add(user)
+        message.save()
+        result['state']['msg'] = 'successful'
+        result['data']['msg_id'] = message.id
+        result['data']['like'] = message.like
+        result['data']['dislike'] = message.dislike
+        return JsonResponse(result)
+    except Exception as e:
+        result.pop('data')
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 
 def messagesDislike(request):
     #TO DO 给消息点踩
-    pass
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "msg_id": 0,
+            "like": 0,
+            "dislike": 0
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        msg_id = request_data['msg_id']
+        user_id = request_data['user_id']
+        message = models.Message.objects.filter(id = msg_id)[0]
+        user = models.User.objects.filter(id = user_id)[0]
+        message.dislike += 1
+        message.who_dislike.add(user)
+        message.save()
+        result['state']['msg'] = 'successful'
+        result['data']['msg_id'] = message.id
+        result['data']['like'] = message.like
+        result['data']['dislike'] = message.dislike
+        return JsonResponse(result)
+    except Exception as e:
+        result.pop('data')
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 
 def messagesMentioned(request):
     #TO DO 查看被@的信息
     pass
 
-def commentsMentioned(request):
-    #TO DO 查看被@的评论
-    pass
+def commentsLike(request):
+    #TO DO 给评论点赞
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "comment_id": 0,
+            "like": 0,
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        msg_id = request_data['comment_id']
+        user_id = request_data['user_id']
+        comment = models.Comment.objects.filter(id = msg_id)[0]
+        user = models.User.objects.filter(id = user_id)[0]
+        comment.like += 1
+        comment.who_like.add(user)
+        comment.save()
+        result['state']['msg'] = 'successful'
+        result['data']['comment_id'] = comment.id
+        result['data']['like'] = comment.like
+        return JsonResponse(result)
+    except Exception as e:
+        result.pop('data')
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 
 def staticResources(request):
     #TO DO 获取静态资源
-    pass
+    try:
+        url = request.GET.get('resource_url')
+        url = os.path.join(PROJECT_ROOT, url)
+        return FileResponse(open(url, 'rb'))
+    except Exception as e:
+        result = {
+            "state": {
+                "msg": ""
+            }
+        }
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 
 """
 以下函数皆为废弃接口，仅用于参考
