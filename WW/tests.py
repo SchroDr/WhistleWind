@@ -114,6 +114,14 @@ class UsersModelTests(TestCase):
             len(response.json()['data']['messages']), len(user.message_set.all()))
         self.assertEqual(
             len(response.json()['data']['comments']), len(user.comment_set.all()))
+        self.assertEqual(
+            response.json()['data']['follows_number'], len(user.follows.all()))
+        self.assertEqual(
+            response.json()['data']['followers_number'], len(user.follow_set.all()))
+        self.assertEqual(
+            response.json()['data']['messages_number'], len(user.message_set.all()))
+        self.assertEqual(
+            response.json()['data']['comments_number'], len(user.comment_set.all()))
 
     def test_get_part_user_messages_works_successfully(self):
         user = models.User.objects.all()[0]
@@ -139,6 +147,14 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response.json()['data']['followers']), 5)
         self.assertEqual(len(response.json()['data']['messages']), 5)
         self.assertEqual(len(response.json()['data']['comments']), 5)
+        self.assertEqual(
+            response.json()['data']['follows_number'], len(user.follows.all()))
+        self.assertEqual(
+            response.json()['data']['followers_number'], len(user.follow_set.all()))
+        self.assertEqual(
+            response.json()['data']['messages_number'], len(user.message_set.all()))
+        self.assertEqual(
+            response.json()['data']['comments_number'], len(user.comment_set.all()))
 
     def test_get_minimal_user_messages_works_successfully(self):
         user = models.User.objects.all()[0]
@@ -163,6 +179,14 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response.json()['data']['followers']), 0)
         self.assertEqual(len(response.json()['data']['messages']), 0)
         self.assertEqual(len(response.json()['data']['comments']), 0)
+        self.assertEqual(
+            response.json()['data']['follows_number'], len(user.follows.all()))
+        self.assertEqual(
+            response.json()['data']['followers_number'], len(user.follow_set.all()))
+        self.assertEqual(
+            response.json()['data']['messages_number'], len(user.message_set.all()))
+        self.assertEqual(
+            response.json()['data']['comments_number'], len(user.comment_set.all()))
 
     def test_update_user_messages_works_successfully(self):
         request_data = {
