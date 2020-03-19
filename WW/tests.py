@@ -56,7 +56,7 @@ def createTestDatabase():
             comment.save()
         for i in range(3):
             messageImage = models.MessageImage.objects.create(
-                message = message, img = 'media/pic/rua.jpg'
+                message=message, img='media/pic/rua.jpg'
             )
             messageImage.save()
     # 为每个用户增加9个关注
@@ -253,7 +253,8 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/messages/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id = response.json()['data']['msg_id'])[0]
+        message = models.Message.objects.filter(
+            id=response.json()['data']['msg_id'])[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['msg_id'], 1)
@@ -272,7 +273,8 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
-        self.assertEqual(response.json()['data']['msg_id'], request_data['msg_id'])
+        self.assertEqual(response.json()['data']
+                         ['msg_id'], request_data['msg_id'])
 
     def test_put_messages_works_successfully(self):
         """
@@ -296,10 +298,12 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.put(
             '/ww/messages/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id = response.json()['data']['msg_id'])[0]
+        message = models.Message.objects.filter(
+            id=response.json()['data']['msg_id'])[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
-        self.assertEqual(response.json()['data']['msg_id'], request_data['msg_id'])
+        self.assertEqual(response.json()['data']
+                         ['msg_id'], request_data['msg_id'])
         self.assertEqual(len(message.messageimage_set.all()), 2)
 
     def test_delete_messages_works_successfully(self):
@@ -330,11 +334,11 @@ class MessagesModelTests(TestCase):
             "user_id": user.id,
             "number": 18
         }
-        response = self.c.get('/ww/messages/set/', data=request_data, content_type='application/json')
+        response = self.c.get(
+            '/ww/messages/set/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertLessEqual(len(response.json()['data']['messages']), 18)
-
 
     def test_give_a_like_to_a_message_works_successfully(self):
         """
@@ -348,14 +352,13 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/messages/like/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id = message.id)[0]
+        message = models.Message.objects.filter(id=message.id)[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']['msg_id'], message.id)
         self.assertEqual(response.json()['data']['like'], message.like)
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_like.all())
-
 
     def test_give_a_dislike_to_a_message_works_successfully(self):
         """
@@ -369,7 +372,7 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/messages/dislike/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id = message.id)[0]
+        message = models.Message.objects.filter(id=message.id)[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']['msg_id'], message.id)
@@ -392,7 +395,6 @@ class MessagesModelTests(TestCase):
     #     self.assertEqual(response.status_code, 200)
     #     self.assertEqual(response.json()['state']['msg'], 'successful')
     #     self.assertEqual(len(response.json()['data']['messages'], len(user.message_set.all())))
-
 
 
 class CommentsModelTests(TestCase):
@@ -448,7 +450,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['comment_id'], request_data['comment_id'])
-    
+
     def test_give_a_like_to_a_comment_works_successfully(self):
         """
         测试能否正确点赞
@@ -461,7 +463,7 @@ class CommentsModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/comments/like/', data=request_data, content_type='application/json')
-        comment = models.Comment.objects.filter(id = comment.id)[0]
+        comment = models.Comment.objects.filter(id=comment.id)[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']['comment_id'], comment.id)

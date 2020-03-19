@@ -26,6 +26,8 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 PIC_ROOT = os.path.join(MEDIA_ROOT, 'pic')
 
 # jhc work----------------------------------------------------------------
+
+
 class UsersView(View):
     """
     本模块用于对用户信息进行增删改查
@@ -35,7 +37,8 @@ class UsersView(View):
         # TO DO 用户注册
         result = {
             "state": {
-                "msg": "existed"
+                "msg": "existed",
+                'descripntion': 'Null',
             },
         }
         try:
@@ -56,6 +59,7 @@ class UsersView(View):
                 return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
@@ -71,101 +75,115 @@ class UsersView(View):
                 "phonenumber": "",
                 "avatar": "",
                 "introduction": "",
+                "follows_number": 0,
+                "followers_number": 0,
+                "messages_number": 0,
+                "comments_number": 0,
                 "follows": [],
                 "followers": [],
                 "messages": [],
                 "comments": [],
             },
             "state": {
-                "msg": "failed"
+                'msg': 'failed',
+                'descripntion': 'Null',
             }
         }
-        # try:
-        user_id = request.GET.get('user_id')
-        follows_start = int(request.GET.get('follows_start'))
-        follows_number = int(request.GET.get('follows_number'))
-        followers_start = int(request.GET.get('followers_start'))
-        followers_number = int(request.GET.get('followers_number'))
-        messages_start = int(request.GET.get('messages_start'))
-        messages_number = int(request.GET.get('messages_number'))
-        comments_start = int(request.GET.get('comments_start'))
-        comments_number = int(request.GET.get('comments_number'))
-        # -----------------------------------------------------
-        userInfo = models.User.objects.filter(id=user_id)
-        userInfo = userInfo.first()
-        result['data']['user_id'] = int(user_id)
-        result['data']['username'] = userInfo.username
-        result['data']['email'] = userInfo.email
-        result['data']['phonenumber'] = userInfo.phonenumber
-        result['data']['avatar'] = str(userInfo.avatar)
-        result['data']['introduction'] = userInfo.introduction
-        '''
-        关注的人
-        '''
-        follows = models.Followship.objects.filter(
-            fan=user_id).order_by('date')
-        allFollows = len(follows)
-        res = self.request_return_user(follows, follows_start, follows_number)
-        for i in res:
-            oneFoll = models.User.objects.get(id=str(i.followed_user))
-            result['data']['follows'].append(
-                {
-                    "user_id": str(i.followed_user),
-                    "username": oneFoll.username,
-                    "avatar": str(oneFoll.avatar)
-                }
-            )
-        '''
-        粉丝
-        '''
-        followers = models.Followship.objects.filter(
-            followed_user=user_id).order_by('date')
-        allFollowers = len(followers)
-        res = self.request_return_user(
-            followers, followers_start, followers_number)
-        for i in res:
-            oneFoll = models.User.objects.get(id=str(i.fan))
-            result['data']['followers'].append(
-                {
-                    "user_id": str(i.fan),
-                    "username": oneFoll.username,
-                    "avatar": str(oneFoll.avatar)
-                }
-            )
-        '''
-        信息
-        '''
-        messages = models.Message.objects.filter(
-            author=user_id).order_by('-add_date')
-        res = self.request_return_user(
-            messages, messages_start, messages_number)
-        for i in res:
-            result['data']['messages'].append(
-                {
-                    "message_id": str(i.id),
-                    "title": i.title,
-                    "content": i.content
-                }
-            )
-        '''
-        评论
-        '''
-        comments = models.Comment.objects.filter(
-            author=user_id).order_by('-add_date')
-        res = self.request_return_user(
-            comments, comments_start, comments_number)
-        for i in res:
-            result['data']['comments'].append(
-                {
-                    "comment_id": str(i.id),
-                    "content": i.content
-                }
-            )
-        result['state']['msg'] = 'successful'
-        # except Exception as e:
-        #     result['state']['msg'] = 'failed'
-        #     print('\nrepr(e):\t', repr(e))
-        #     print('traceback.print_exc():', traceback.print_exc())
+        try:
+            user_id = request.GET.get('user_id')
+            follows_start = int(request.GET.get('follows_start'))
+            follows_number = int(request.GET.get('follows_number'))
+            followers_start = int(request.GET.get('followers_start'))
+            followers_number = int(request.GET.get('followers_number'))
+            messages_start = int(request.GET.get('messages_start'))
+            messages_number = int(request.GET.get('messages_number'))
+            comments_start = int(request.GET.get('comments_start'))
+            comments_number = int(request.GET.get('comments_number'))
+            # -----------------------------------------------------
+            userInfo = models.User.objects.filter(id=user_id)
+            userInfo = userInfo.first()
+            result['data']['user_id'] = int(user_id)
+            result['data']['username'] = userInfo.username
+            result['data']['email'] = userInfo.email
+            result['data']['phonenumber'] = userInfo.phonenumber
+            result['data']['avatar'] = str(userInfo.avatar)
+            result['data']['introduction'] = userInfo.introduction
+            '''
+            关注的人
+            '''
+            follows = models.Followship.objects.filter(
+                fan=user_id).order_by('date')
+            allFollows = len(follows)
+            result['data']['follows_number'] = allFollows
+            res = self.request_return_user(
+                follows, follows_start, follows_number)
+            for i in res:
+                oneFoll = models.User.objects.get(id=str(i.followed_user))
+                result['data']['follows'].append(
+                    {
+                        "user_id": str(i.followed_user),
+                        "username": oneFoll.username,
+                        "avatar": str(oneFoll.avatar)
+                    }
+                )
+            '''
+            粉丝
+            '''
+            followers = models.Followship.objects.filter(
+                followed_user=user_id).order_by('date')
+            allFollowers = len(followers)
+            result['data']['followers_number'] = allFollowers
+            res = self.request_return_user(
+                followers, followers_start, followers_number)
+            for i in res:
+                oneFoll = models.User.objects.get(id=str(i.fan))
+                result['data']['followers'].append(
+                    {
+                        "user_id": str(i.fan),
+                        "username": oneFoll.username,
+                        "avatar": str(oneFoll.avatar)
+                    }
+                )
+            '''
+            信息
+            '''
+            messages = models.Message.objects.filter(
+                author=user_id).order_by('-add_date')
+            allMessages = len(messages)
+            result['data']['messages_number'] = allMessages
+            res = self.request_return_user(
+                messages, messages_start, messages_number)
+            for i in res:
+                result['data']['messages'].append(
+                    {
+                        "message_id": str(i.id),
+                        "title": i.title,
+                        "content": i.content
+                    }
+                )
+            '''
+            评论
+            '''
+            comments = models.Comment.objects.filter(
+                author=user_id).order_by('-add_date')
+            allComments = len(comments)
+            result['data']['comments_number'] = allComments
+            res = self.request_return_user(
+                comments, comments_start, comments_number)
+            for i in res:
+                result['data']['comments'].append(
+                    {
+                        "comment_id": str(i.id),
+                        "content": i.content
+                    }
+                )
+            result['state']['msg'] = 'successful'
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result['state']['descripntion'] = repr(e)
+            del result['data']
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
     def request_return_user(self, allContent, start, num):
@@ -176,7 +194,7 @@ class UsersView(View):
         # 开始位置大于总数
         elif start > len(res) - 1:
             # 总数小于11，返回全部
-            if len(res) <= 11:
+            if len(res) <= 10:
                 res = res
             # 总数较多，返回10条
             else:
@@ -184,45 +202,52 @@ class UsersView(View):
         # 开始位置+请求数量=超出总数
         elif start <= len(res) - 1 and (start+num) > len(res)-1:
             res = res[start:]
+        else:
+            res = res[start:start+num]
         return res
 
     def put(self, request):
         # TO DO 修改用户信息
         result = {
             "state": {
-                "msg": "successful"
+                "msg": "successful",
+                'descripntion': 'Null',
             },
             "data": {
                 "user_id": 0
             }
         }
-        put = demjson.decode(request.body)
-        user_id = put['user_id']
-        # username = put['username']
-        # email = put['email']
-        # phonenumber = put['phonenumber']
-        # avatar = put['avatar']
-        # introduction = put['introduction']
-        user = models.User.objects.filter(id=user_id)
-        if len(user) == 1:
-            # try:
-            if 'username' in put:
-                user.first().username = put['username']
-            if 'email' in put:
-                user.first().email = put['email']
-            if 'phonenumber' in put:
-                user.first().phonenumber = put['phonenumber']
-            if 'avatar' in put:
-                user.first().avatar = put['avatar']
-            if 'introduction' in put:
-                user.first().introduction = put['introduction']
-            user.first().save()
-            result['state']['msg'] = 'successful'
-            result['data']['user_id'] = user_id
-            # except:
-            #     result['state']['msg'] = 'failed'
-        else:
+        try:
+            put = demjson.decode(request.body)
+            user_id = put['user_id']
+            # username = put['username']
+            # email = put['email']
+            # phonenumber = put['phonenumber']
+            # avatar = put['avatar']
+            # introduction = put['introduction']
+            user = models.User.objects.filter(id=user_id)
+            if len(user) == 1:
+                # try:
+                if 'username' in put:
+                    user.first().username = put['username']
+                if 'email' in put:
+                    user.first().email = put['email']
+                if 'phonenumber' in put:
+                    user.first().phonenumber = put['phonenumber']
+                if 'avatar' in put:
+                    user.first().avatar = put['avatar']
+                if 'introduction' in put:
+                    user.first().introduction = put['introduction']
+                user.first().save()
+                result['state']['msg'] = 'successful'
+                result['data']['user_id'] = user_id
+                # except:
+                #     result['state']['msg'] = 'failed'
+            else:
+                result['state']['msg'] = 'failed'
+        except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
         return JsonResponse(result)
 
     def delete(self, request):
@@ -235,6 +260,8 @@ class UsersView(View):
 """
     Message模块由SchroDr绝赞摸鱼中
 """
+
+
 class MessagesView(View):
     """
     本模块用于对消息进行增删改查
@@ -270,7 +297,7 @@ class MessagesView(View):
             message.save()
             for image in images:
                 messageImage = models.MessageImage.objects.create(
-                    message = message, img = image['image_url']
+                    message=message, img=image['image_url']
                 )
                 messageImage.save()
             result['state']['msg'] = 'successful'
@@ -563,6 +590,8 @@ class CommentsView(View):
 """
 Image模块由SchroDr绝赞划水中！
 """
+
+
 class ImagesView(View):
     """
     本模块用于上传下载图片
@@ -733,7 +762,7 @@ def testVericode(request):
 
 
 def messagesSet(request):
-    #TO DO 根据地理信息等返回一组消息
+    # TO DO 根据地理信息等返回一组消息
     result = {
         "state": {
             "msg": "",
@@ -773,7 +802,8 @@ def messagesSet(request):
                 }
             }
             if len(message.messageimage_set.all()) > 0:
-                message['img']['image_url'].append(message.messageimage_set.all()[0].img)
+                message['img']['image_url'].append(
+                    message.messageimage_set.all()[0].img)
             result['data']['messages'].append(message_info)
         result['state']['msg'] = 'successful'
         return JsonResponse(result)
@@ -787,7 +817,7 @@ def messagesSet(request):
 
 
 def messagesLike(request):
-    #TO DO 给消息点赞
+    # TO DO 给消息点赞
     result = {
         "state": {
             "msg": "",
@@ -803,8 +833,8 @@ def messagesLike(request):
         request_data = demjson.decode(request.body)
         msg_id = request_data['msg_id']
         user_id = request_data['user_id']
-        message = models.Message.objects.filter(id = msg_id)[0]
-        user = models.User.objects.filter(id = user_id)[0]
+        message = models.Message.objects.filter(id=msg_id)[0]
+        user = models.User.objects.filter(id=user_id)[0]
         message.like += 1
         message.who_like.add(user)
         message.save()
@@ -821,8 +851,9 @@ def messagesLike(request):
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 def messagesDislike(request):
-    #TO DO 给消息点踩
+    # TO DO 给消息点踩
     result = {
         "state": {
             "msg": "",
@@ -838,8 +869,8 @@ def messagesDislike(request):
         request_data = demjson.decode(request.body)
         msg_id = request_data['msg_id']
         user_id = request_data['user_id']
-        message = models.Message.objects.filter(id = msg_id)[0]
-        user = models.User.objects.filter(id = user_id)[0]
+        message = models.Message.objects.filter(id=msg_id)[0]
+        user = models.User.objects.filter(id=user_id)[0]
         message.dislike += 1
         message.who_dislike.add(user)
         message.save()
@@ -856,12 +887,14 @@ def messagesDislike(request):
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 def messagesMentioned(request):
-    #TO DO 查看被@的信息
+    # TO DO 查看被@的信息
     pass
 
+
 def commentsLike(request):
-    #TO DO 给评论点赞
+    # TO DO 给评论点赞
     result = {
         "state": {
             "msg": "",
@@ -876,8 +909,8 @@ def commentsLike(request):
         request_data = demjson.decode(request.body)
         msg_id = request_data['comment_id']
         user_id = request_data['user_id']
-        comment = models.Comment.objects.filter(id = msg_id)[0]
-        user = models.User.objects.filter(id = user_id)[0]
+        comment = models.Comment.objects.filter(id=msg_id)[0]
+        user = models.User.objects.filter(id=user_id)[0]
         comment.like += 1
         comment.who_like.add(user)
         comment.save()
@@ -893,8 +926,9 @@ def commentsLike(request):
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 def staticResources(request):
-    #TO DO 获取静态资源
+    # TO DO 获取静态资源
     try:
         url = request.GET.get('resource_url')
         url = os.path.join(PROJECT_ROOT, url)
@@ -912,9 +946,12 @@ def staticResources(request):
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 """
 以下函数皆为废弃接口，仅用于参考
 """
+
+
 def login_old(request):
     result = {
         'isSucceed': 0,
