@@ -244,7 +244,8 @@ class MessagesView(View):
         # TO DO 发送消息
         result = {
             "state": {
-                "msg": "successful"
+                "msg": "successful",
+                "description": ""
             },
             "data": {
                 "msg_id": 0
@@ -277,6 +278,7 @@ class MessagesView(View):
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -313,7 +315,8 @@ class MessagesView(View):
                 ]
             },
             "state": {
-                "msg": ""
+                "msg": "",
+                "description": ""
             }
         }
         try:
@@ -369,6 +372,7 @@ class MessagesView(View):
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -378,7 +382,8 @@ class MessagesView(View):
         # TO DO 修改消息
         result = {
             "state": {
-                "msg": ""
+                "msg": "",
+                "description": ""
             },
             "data": {
                 "msg_id": 0
@@ -405,6 +410,7 @@ class MessagesView(View):
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -414,7 +420,8 @@ class MessagesView(View):
         # TO DO 删除消息
         result = {
             "state": {
-                "msg": ""
+                "msg": "",
+                "description": ""
             },
             "data": {
                 "msg_id": 0
@@ -430,6 +437,7 @@ class MessagesView(View):
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -564,7 +572,8 @@ class ImagesView(View):
         # TO DO 上传图片
         result = {
             "data": {
-                "image_url": ""
+                "image_url": "",
+                "description": ""
             },
             "state": {
                 "msg": ""
@@ -583,6 +592,7 @@ class ImagesView(View):
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -597,10 +607,12 @@ class ImagesView(View):
         except Exception as e:
             result = {
                 "state": {
-                    "msg": ""
+                    "msg": "",
+                    "description": ""
                 }
             }
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
@@ -610,7 +622,8 @@ def login(request):
     # TO DO 登陆
     result = {
         "state": {
-            "msg": ""
+            "msg": "",
+            "description": ""
         },
         "data": {
             "cookie": "",
@@ -631,12 +644,14 @@ def login(request):
             return JsonResponse(result)
     except IndexError as e:
         result['state']['msg'] = 'nonexistent'
+        result['state']['description'] = str(repr(e))
         result.pop('data')
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
     except Exception as e:
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         result.pop('data')
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
@@ -647,7 +662,8 @@ def requestVericode(request):
     # TO DO 向用户手机发送验证码，并将验证码存入数据库中
     result = {
         "state": {
-            "msg": ""
+            "msg": "",
+            "description": ""
         },
         "data": {
             "time_limit": ''
@@ -683,6 +699,7 @@ def requestVericode(request):
         return JsonResponse(result)
     except Exception as e:
         result.pop('data')
+        result['state']['description'] = str(repr(e))
         result['state']['msg'] = 'failed'
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
@@ -693,7 +710,8 @@ def testVericode(request):
     # TO DO 验证验证码是否正确
     result = {
         "state": {
-            "msg": ""
+            "msg": "",
+            "description": ""
         }
     }
     try:
@@ -708,6 +726,7 @@ def testVericode(request):
             return JsonResponse(result)
     except Exception as e:
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
@@ -760,6 +779,7 @@ def messagesSet(request):
         return JsonResponse(result)
     except Exception as e:
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         result.pop('data')
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
@@ -796,6 +816,7 @@ def messagesLike(request):
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
@@ -830,6 +851,7 @@ def messagesDislike(request):
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
@@ -866,6 +888,7 @@ def commentsLike(request):
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
@@ -879,10 +902,12 @@ def staticResources(request):
     except Exception as e:
         result = {
             "state": {
-                "msg": ""
+                "msg": "",
+                "description": ""
             }
         }
         result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
