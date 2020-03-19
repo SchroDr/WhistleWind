@@ -247,7 +247,7 @@ class MessagesView(View):
                 "msg": "successful"
             },
             "data": {
-                "msg_id": 697628
+                "msg_id": 0
             }
         }
         try:
@@ -257,6 +257,7 @@ class MessagesView(View):
             pos_y = request_data['position']['pos_y']
             title = request_data['title']
             content = request_data['content']
+            images = request_data['images']
             author = models.User.objects.filter(id=author_id)[0]
             message = models.Message.objects.create(
                 pos_x=pos_x,
@@ -266,6 +267,11 @@ class MessagesView(View):
                 author=author
             )
             message.save()
+            for image in images:
+                messageImage = models.MessageImage.objects.create(
+                    message = message, img = image['image_url']
+                )
+                messageImage.save()
             result['state']['msg'] = 'successful'
             result['data']['msg_id'] = message.id
             return JsonResponse(result)
@@ -301,6 +307,9 @@ class MessagesView(View):
                 "add_date": "",
                 "mod_date": "",
                 "comments": [
+                ],
+                "images": [
+
                 ]
             },
             "state": {
@@ -351,9 +360,12 @@ class MessagesView(View):
                 result['data']['comments'].append(comment_info)
                 if i >= 9:
                     break
+            for i, image in enumerate(message.messageimage_set.all()):
+                message_info = {
+                    'image_url': image.img
+                }
+                result['data']['images'].append(message_info)
             result['state']['msg'] = 'successful'
-            message.save()
-            # print(result)
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
@@ -380,10 +392,10 @@ class MessagesView(View):
                 message.title = request_data['title']
             if 'content' in request_data.keys():
                 message.content = request_data['content']
-            if 'img' in request_data.keys():
-                for img in request_data['img']:
+            if 'images' in request_data.keys():
+                for image in request_data['images']:
                     message_image = models.MessageImage.objects.create(
-                        img=img['image_url'],
+                        img=image['image_url'],
                         message=message
                     )
                     message_image.save()
@@ -745,7 +757,6 @@ def messagesSet(request):
                 message['img']['image_url'].append(message.messageimage_set.all()[0].img)
             result['data']['messages'].append(message_info)
         result['state']['msg'] = 'successful'
-        print(result)
         return JsonResponse(result)
     except Exception as e:
         result['state']['msg'] = 'failed'
