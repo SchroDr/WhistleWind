@@ -799,6 +799,10 @@ def messagesSet(request):
                     "author_id": message.author.id,
                     "username": message.author.username,
                     "avatar": message.author.avatar
+                },
+                "position": {
+                    "pos_x": message.pos_y,
+                    "pos_y": message.pos_x
                 }
             }
             if len(message.messageimage_set.all()) > 0:
