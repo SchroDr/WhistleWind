@@ -291,7 +291,9 @@ class MessagesModelTests(TestCase):
             ],
             "images": [
                 {
-                    "image_url": "/media/pic/rua.jpg",
+                    "image_url": "/media/pic/rua.jpg"
+                },
+                {
                     "image_url": "/media/pic/rua.jpg"
                 }
             ]
