@@ -806,8 +806,9 @@ def messagesSet(request):
                 }
             }
             if len(message.messageimage_set.all()) > 0:
-                message_info['images']['image_url'].append(
-                    message.messageimage_set.all()[0].img)
+                message_info['images'].append({
+                    "image_url": message.messageimage_set.all()[0].img
+                })
             result['data']['messages'].append(message_info)
         result['state']['msg'] = 'successful'
         return JsonResponse(result)
