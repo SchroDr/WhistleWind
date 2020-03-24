@@ -6,6 +6,7 @@ from django.test import TestCase, Client
 from django.http import QueryDict
 from django.test.utils import setup_test_environment
 from django.core.cache import cache
+from django.db import transaction
 
 """
 本项目可喜可贺地引入tests模块！
@@ -205,7 +206,8 @@ class UsersModelTests(TestCase):
         }
         response = self.c.put('/ww/users/', data=request_data,
                               content_type='application/json')
-        user.refresh_from_db()
+        with transaction.atomic():
+            user.refresh_from_db()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
