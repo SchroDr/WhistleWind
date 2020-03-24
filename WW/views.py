@@ -404,7 +404,6 @@ class MessagesView(View):
                 }
                 result['data']['images'].append(message_info)
             result['state']['msg'] = 'successful'
-            print(result)
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
