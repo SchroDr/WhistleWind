@@ -205,6 +205,7 @@ class UsersModelTests(TestCase):
         }
         response = self.c.put('/ww/users/', data=request_data,
                               content_type='application/json')
+        user = models.User.objects.get(id = user.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
