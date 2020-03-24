@@ -433,6 +433,7 @@ class MessagesView(View):
             if 'content' in request_data.keys():
                 message.content = request_data['content']
             if 'images' in request_data.keys():
+                message.messageimage_set.all().delete()
                 for image in request_data['images']:
                     message_image = models.MessageImage.objects.create(
                         img=image['image_url'],
