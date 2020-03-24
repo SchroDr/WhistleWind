@@ -194,12 +194,14 @@ class UsersModelTests(TestCase):
             response.json()['data']['comments_number'], len(user.comment_set.all()))
 
     def test_update_user_messages_works_successfully(self):
+        user = models.User.objects.all()[0]
         request_data = {
-            "user_id": models.User.objects.all()[0].id,
+            "user_id": user.id,
             "username": "张三",
             "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
             "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
-            "introduction": ""
+            "introduction": "",
+            "avatar": "media/pic/029jozv8jp.png"
         }
         response = self.c.put('/ww/users/', data=request_data,
                               content_type='application/json')
@@ -207,6 +209,7 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['user_id'], request_data['user_id'])
+        self.assertEqual(user.avatar, "media/pic/029jozv8jp.png")
 
 
 class MessagesModelTests(TestCase):
