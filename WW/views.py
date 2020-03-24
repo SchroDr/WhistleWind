@@ -225,20 +225,20 @@ class UsersView(View):
             # phonenumber = put['phonenumber']
             # avatar = put['avatar']
             # introduction = put['introduction']
-            user = models.User.objects.filter(id=user_id)
-            if len(user) == 1:
+            user = models.User.objects.filter(id=user_id).first()
+            if user != None:
                 # try:
                 if 'username' in put:
-                    user.first().username = put['username']
+                    user.username = put['username']
                 if 'email' in put:
-                    user.first().email = put['email']
+                    user.email = put['email']
                 if 'phonenumber' in put:
-                    user.first().phonenumber = put['phonenumber']
+                    user.phonenumber = put['phonenumber']
                 if 'avatar' in put:
-                    user.first().avatar = put['avatar']
+                    user.avatar = put['avatar']
                 if 'introduction' in put:
-                    user.first().introduction = put['introduction']
-                user.first().save()
+                    user.introduction = put['introduction']
+                user.save()
                 result['state']['msg'] = 'successful'
                 result['data']['user_id'] = user_id
                 # except:
@@ -248,6 +248,8 @@ class UsersView(View):
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
     def delete(self, request):
