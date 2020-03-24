@@ -45,7 +45,7 @@ def createTestDatabase():
             message.save()
     messages = models.Message.objects.all()
     # 为每条增加10条评论，3张图片
-    for mesaage in messages:
+    for message in messages:
         for i in range(10):
             user = random.choice(users)
             comment = models.Comment.objects.create(
@@ -268,8 +268,9 @@ class MessagesModelTests(TestCase):
         """
         用于测试获取信息是否工作正常
         """
+        message = models.Message.objects.all()[0]
         request_data = {
-            "msg_id": models.Message.objects.all()[0].id,
+            "msg_id": message.id,
             "who_like_limit": 10,
             "who_dislike_limit": 10
         }

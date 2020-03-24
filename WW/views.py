@@ -387,7 +387,13 @@ class MessagesView(View):
             for i, comment in enumerate(message.comment_set.all()):
                 comment_info = {
                     "comment_id": comment.id,
-                    "content": comment.content
+                    "content": comment.content,
+                    'like': comment.like,
+                    'author': {
+                        'author_id': comment.author.id,
+                        'username': comment.author.username,
+                        'avatar': comment.author.username
+                    }
                 }
                 result['data']['comments'].append(comment_info)
                 if i >= 9:
@@ -398,6 +404,7 @@ class MessagesView(View):
                 }
                 result['data']['images'].append(message_info)
             result['state']['msg'] = 'successful'
+            print(result)
             return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
@@ -515,7 +522,11 @@ class CommentsView(View):
             "data": {
                 "comment_id": 0,
                 "msg_id": 0,
-                "author_id": 0,
+                "author": {
+                    "author_id": "",
+                    "username": "",
+                    "avatar": ""
+                },
                 "content": "",
                 "like": 0,
                 "who_like": [
@@ -541,7 +552,9 @@ class CommentsView(View):
                 if comment.deleted != 1:
                     result['data']['comment_id'] = comment.id
                     result['data']['msg_id'] = str(comment.msg)
-                    result['data']['author_id'] = str(comment.author)
+                    result['data']['author']['author_id'] = str(comment.author)
+                    result['data']['author']['username'] = str(comment.author.username)
+                    result['data']['author']['avatar'] = str(comment.author.avatar)
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like
                     result['data']['add_date'] = str(comment.add_date)
