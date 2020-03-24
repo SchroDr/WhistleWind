@@ -855,10 +855,14 @@ def messagesLike(request):
         user_id = request_data['user_id']
         message = models.Message.objects.filter(id=msg_id)[0]
         user = models.User.objects.filter(id=user_id)[0]
-        message.like += 1
-        message.who_like.add(user)
-        message.save()
-        result['state']['msg'] = 'successful'
+        if user in message.who_like.all():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = "Liked once"
+        else:
+            message.like += 1
+            message.who_like.add(user)
+            message.save()
+            result['state']['msg'] = 'successful'
         result['data']['msg_id'] = message.id
         result['data']['like'] = message.like
         result['data']['dislike'] = message.dislike
@@ -891,10 +895,14 @@ def messagesDislike(request):
         user_id = request_data['user_id']
         message = models.Message.objects.filter(id=msg_id)[0]
         user = models.User.objects.filter(id=user_id)[0]
-        message.dislike += 1
-        message.who_dislike.add(user)
-        message.save()
-        result['state']['msg'] = 'successful'
+        if user in message.who_dislike.all():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = "Disliked once"
+        else:
+            message.dislike += 1
+            message.who_dislike.add(user)
+            message.save()
+            result['state']['msg'] = 'successful'
         result['data']['msg_id'] = message.id
         result['data']['like'] = message.like
         result['data']['dislike'] = message.dislike
@@ -931,10 +939,14 @@ def commentsLike(request):
         user_id = request_data['user_id']
         comment = models.Comment.objects.filter(id=msg_id)[0]
         user = models.User.objects.filter(id=user_id)[0]
-        comment.like += 1
-        comment.who_like.add(user)
-        comment.save()
-        result['state']['msg'] = 'successful'
+        if user in comment.who_like.all():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = "Liked once"
+        else:
+            comment.like += 1
+            comment.who_like.add(user)
+            comment.save()
+            result['state']['msg'] = 'successful'
         result['data']['comment_id'] = comment.id
         result['data']['like'] = comment.like
         return JsonResponse(result)
@@ -965,215 +977,3 @@ def staticResources(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
-
-
-"""
-以下函数皆为废弃接口，仅用于参考
-"""
-
-
-def login_old(request):
-    result = {
-        'isSucceed': 0,
-        'isNotExist': 0,
-        'isWrong': 0,
-        'userId': ''
-    }
-    email = request.POST.get('email')
-    password = request.POST.get('password')
-    user = models.User.objects.filter(email=email)
-    if len(user) == 0:
-        result['isNotExist'] = 1
-        result['userId'] = ""
-        return JsonResponse(result)
-    if user[0].password == password:
-        result['isSucceed'] = 1
-        result['userId'] = user[0].unique_ID
-        return JsonResponse(result)
-    result['isWrong'] = 1
-    return JsonResponse(result)
-
-
-def register(request):
-    result = {
-        'isSucceed': 0,
-        'isExist': 0
-    }
-    email = request.POST.get('email')
-    # username = request.POST.get('username')
-    password = request.POST.get('password')
-    user = models.User.objects.filter(email=email)
-    print(len(user))
-    if len(user) == 1:
-        result['isExist'] = 1
-        return JsonResponse(result)
-    user = models.User.objects.create(email=email, password=password)
-    result['isSucceed'] = 1
-    return JsonResponse(result)
-
-
-def getMessages(request):
-    result = []
-    x = float(request.POST.get('x'))
-    y = float(request.POST.get('y'))
-    zoom = float(request.POST.get('zoom'))
-    width = float(request.POST.get('width'))
-    height = float(request.POST.get('height'))
-    messages = models.Message.objects.filter(
-        pos_x__gte=x-width, pos_x__lte=x+width, pos_y__gte=y-height, pos_y__lte=y+height)
-    for message in messages:
-        one_result = {
-            'title': '',
-            'content': '',
-            'img': {},
-            'msgId': '',
-            'x': '',
-            'y': ''
-        }
-        one_result['title'] = message.title
-        one_result['content'] = message.content
-        one_result['img'] = message.img
-        one_result['msgId'] = message.msg_ID
-        one_result['x'] = message.pos_x
-        one_result['y'] = message.pos_y
-        result.append(one_result)
-    return JsonResponse(result, safe=False)
-
-
-def getMsgInfo(request):
-    message = models.Message.objects.get(msg_ID=request.POST.get('msgID'))
-    author = models.User.objects.get(unique_ID=message.author)
-    result = {
-        'name': author.user_name,
-        'userID': author.unique_ID,
-        'headerImgUrl': author.avatar_name.url,
-        'like': message.like,
-        'dislike': message.dislike,
-        'time': message.add_date,
-        'imgUrl': message.img,
-        'comments': message.comments
-    }
-    return JsonResponse(result)
-
-
-def getComtInfo(request):
-    result = {
-        'name': '',
-        'headerImgUrl': '',
-        'time': '',
-        'content': '',
-        'imgUrl': '',
-        'like': ''
-    }
-    comment_ID = request.POST.get('commentsId')
-    comment = models.Comment.objects.filter(comment_ID=comment_ID)
-    user = models.User.objects.get(unique_ID=comment.user_ID)
-    if len(comment_ID) != 1:
-        return 0
-    result['name'] = user.user_name
-    result['headerImgUrl'] = user.avatar_name
-    result['time'] = comment.add_date
-    result['content'] = comment.content
-    result['imgUrl'] = comment.img
-    result['like'] = comment.like
-    return JsonResponse(result)
-
-
-def giveALike(request):
-    message = models.Message.objects.get(msg_ID=request.POST.get('msgId'))
-    user = models.User.objects.get(unique_ID=request.POST.get('userId'))
-    message.like += 1
-    who_like = json.loads(message.who_like)
-    who_like.append(user.unique_ID)
-    message.who_like = json.dumps(who_like)
-
-
-def giveADisLike(request):
-    message = models.Message.objects.get(msg_ID=request.POST.get('msgId'))
-    user = models.User.objects.get(unique_ID=request.POST.get('userId'))
-    message.dislike += 1
-    who_dislike = json.loads(message.who_dislike)
-    who_dislike.append(user.unique_ID)
-    message.who_dislike = json.dumps(who_dislike)
-
-
-def saveImg(image):
-    if image is not None:
-        print("++++++++++++++++++++++++++++")
-        print(os.path.join(PIC_ROOT, image.name))
-        with open(os.path.join(PIC_ROOT, image.name), 'wb') as f:
-            for chunk in image.chunks(chunk_size=1024):
-                f.write(chunk)
-        return image.name
-    else:
-        return None
-
-
-def postInfo(request):
-    userID = request.POST.get('userID')
-    content = request.POST.get('content')
-    images = request.FILES.getlist('img')
-    images_names = []
-    print(type(images))
-    for image in images:
-        images_names.append('media/pic/' + saveImg(image))
-
-    pos_x = request.POST.get('x')
-    pos_y = request.POST.get('y')
-    mention = request.POST.get('mention')
-    models.Message.objects.create(
-        pos_x=pos_x, pos_y=pos_y, content=content, author=userID, img=json.dumps(images_names))
-    result = {
-        'isSucceed': 1
-    }
-    return JsonResponse(result)
-
-
-def postComt(request):
-    try:
-        msgId = request.POST.get('msgId')
-        userID = request.POST.get('userID')
-        content = request.POST.get('content')
-        img = request.FILES.get('img')
-        image_name = saveImg(img)
-
-        user = models.User.objects.get(unique_ID=userID)
-        msg = models.Message.objects.get(msg_ID=msgId)
-        comment = models.Comment.objects.create(
-            msg_ID=msgId, userID=userID, content=content, img=image_name)
-
-        user_comments = json.loads(user.comments)
-        user_comments.append(comment.comment_ID)
-        user.comments = user_comments
-        user.save()
-
-        msg_comments = json.loads(msg.comments)
-        msg_comments.append(comment.comment_ID)
-        msg.comments = user_comments
-        msg.save()
-        return JsonResponse({'isSucceed': 1})
-    except:
-        return JsonResponse({'isSucceed': 0})
-
-
-def appendTo(temp, key, added_one):
-    temp_line = json.loads(temp)
-    temp_line.append(added_one)
-
-    temp = temp_line
-
-
-def getPic(request):
-    url = request.GET.get('image_url')
-    url = os.path.join(PROJECT_ROOT, url)
-    return FileResponse(open(url, 'rb'))
-
-
-def userInfo(request):
-    userID = request.POST.get('userID')
-    user = models.User.get(unique_ID=userID)
-    result = {
-        'name': user.user_name,
-        'summary': user.introduction,
-
-    }

@@ -19,16 +19,5 @@ urlpatterns = [
     url(r'^comments/like/$', views.commentsLike, name='commentsLike'),
 
     url(r'^images/$', views.ImagesView.as_view(), name='images'),
-    url(r'^static_resources/$', views.staticResources, name='staticResources'),
-
-    # 以下接口均为废弃接口
-    url(r'^login/$', views.login_old, name='login_old'),
-    url(r'^register/$', views.register, name='register'),
-    url(r'^getMessages/$', views.getMessages, name='getMessages'),
-    url(r'^getMsgInfo/$', views.getMsgInfo, name='getMsgInfo'),
-    url(r'^getComtInfo/$', views.getComtInfo, name='getComtInfo'),
-    url(r'^giveALike/$', views.giveALike, name='giveALike'),
-    url(r'^giveADisLike', views.giveADisLike, name='giveADisLike'),
-    url(r'^postInfo/$', views.postInfo, name='postInfo'),
-    url(r'^getPic/$', views.getPic, name='getPic'),
+    url(r'^static_resources/$', views.staticResources, name='staticResources')
 ]

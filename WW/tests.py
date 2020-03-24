@@ -364,9 +364,31 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/messages/like/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id=message.id)[0]
+        message.refresh_from_db()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['msg_id'], message.id)
+        self.assertEqual(response.json()['data']['like'], message.like)
+        self.assertEqual(response.json()['data']['dislike'], message.dislike)
+        self.assertIn(user, message.who_like.all())
+
+    def test_give_a_like_to_a_message_works_unsuccessfully(self):
+        """
+        测试能否正确点赞
+        """
+        user = models.User.objects.filter()[1]
+        message = models.Message.objects.filter()[0]
+        request_data = {
+            "msg_id": message.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/messages/like/', data=request_data, content_type='application/json')
+        response = self.c.post(
+            '/ww/messages/like/', data=request_data, content_type='application/json')
+        message.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
         self.assertEqual(response.json()['data']['msg_id'], message.id)
         self.assertEqual(response.json()['data']['like'], message.like)
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
@@ -384,9 +406,31 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.post(
             '/ww/messages/dislike/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(id=message.id)[0]
+        message.refresh_from_db()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['msg_id'], message.id)
+        self.assertEqual(response.json()['data']['like'], message.like)
+        self.assertEqual(response.json()['data']['dislike'], message.dislike)
+        self.assertIn(user, message.who_dislike.all())
+
+    def test_give_a_dislike_to_a_message_works_successfully(self):
+        """
+        测试能否正确点踩
+        """
+        user = models.User.objects.filter()[1]
+        message = models.Message.objects.filter()[0]
+        request_data = {
+            "msg_id": message.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/messages/dislike/', data=request_data, content_type='application/json')
+        response = self.c.post(
+            '/ww/messages/dislike/', data=request_data, content_type='application/json')
+        message.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
         self.assertEqual(response.json()['data']['msg_id'], message.id)
         self.assertEqual(response.json()['data']['like'], message.like)
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
@@ -478,6 +522,27 @@ class CommentsModelTests(TestCase):
         comment = models.Comment.objects.filter(id=comment.id)[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']['comment_id'], comment.id)
+        self.assertEqual(response.json()['data']['like'], comment.like)
+        self.assertIn(user, comment.who_like.all())
+
+    def test_give_a_like_to_a_comment_works_unsuccessfully(self):
+        """
+        测试能否正确点赞
+        """
+        user = models.User.objects.filter()[1]
+        comment = models.Comment.objects.filter()[0]
+        request_data = {
+            "comment_id": comment.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/comments/like/', data=request_data, content_type='application/json')
+        response = self.c.post(
+            '/ww/comments/like/', data=request_data, content_type='application/json')
+        comment.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
         self.assertEqual(response.json()['data']['comment_id'], comment.id)
         self.assertEqual(response.json()['data']['like'], comment.like)
         self.assertIn(user, comment.who_like.all())
