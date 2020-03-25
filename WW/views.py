@@ -368,7 +368,7 @@ class MessagesView(View):
                 user_info = {
                     "user_id": user.id,
                     "username": user.username,
-                    "avatar": user.avatar.path
+                    "avatar": user.avatar
                 }
                 result['data']['who_like'].append(user_info)
                 if i >= 9:
