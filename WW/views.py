@@ -596,8 +596,10 @@ class CommentsView(View):
                 comm.save()
                 result['state']['msg'] = 'successful'
                 result['data']['comment_id'] = comm.id
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 # jhc-----------------------------------
 
