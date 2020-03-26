@@ -59,8 +59,8 @@ class Message(models.Model):
         User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True)
     who_dislike = models.ManyToManyField(
         User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
-    add_date = models.DateField("发布日期", default=timezone.now)
-    mod_date = models.DateField("最后修改日期", auto_now=True)
+    add_date = models.DateTimeField("发布日期", default=timezone.now)
+    mod_date = models.DateTimeField("最后修改日期", auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)
 
     class Meta:
