@@ -146,7 +146,7 @@ class Friendship(models.Model):
         User, on_delete=models.CASCADE, verbose_name="发起申请的用户", related_name='initiator_set')
     recipient = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name="接受申请的用户", related_name='recipient_set')
-    date = models.DateField("成为好友的日期", default=timezone.now)
+    date = models.DateTimeField("成为好友的日期", default=timezone.now)
     deleted = models.IntegerField("是否被删除", default=0)
 
 
@@ -155,5 +155,5 @@ class Followship(models.Model):
         User, on_delete=models.CASCADE, verbose_name="被关注者", related_name='followed_user_set')
     fan = models.ForeignKey(User, on_delete=models.CASCADE,
                             verbose_name="粉丝", related_name='fan_set')
-    date = models.DateField("开始关注的日期", default=timezone.now)
+    date = models.DateTimeField("开始关注的日期", default=timezone.now)
     deleted = models.IntegerField("是否被删除", default=0)
