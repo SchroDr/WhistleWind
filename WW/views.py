@@ -383,8 +383,8 @@ class MessagesView(View):
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
                     break
-            result['add_data'] = message.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-            result['mod_date'] = message.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+            result['add_data'] = message.add_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+            result['mod_date'] = message.mod_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
             for i, comment in enumerate(message.comment_set.all()):
                 comment_info = {
                     "comment_id": comment.id,
@@ -558,8 +558,8 @@ class CommentsView(View):
                     result['data']['author']['avatar'] = str(comment.author.avatar)
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like
-                    result['data']['add_date'] = comment.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                    result['data']['mod_date'] = comment.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    result['data']['add_date'] = comment.add_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    result['data']['mod_date'] = comment.mod_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
