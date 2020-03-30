@@ -392,7 +392,7 @@ class MessagesView(View):
                     'author': {
                         'author_id': comment.author.id,
                         'username': comment.author.username,
-                        'avatar': comment.author.username
+                        'avatar': comment.author.avatar
                     }
                 }
                 result['data']['comments'].append(comment_info)
