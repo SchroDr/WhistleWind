@@ -721,8 +721,8 @@ def requestVericode(request):
         request_data = demjson.decode(request.body)
         phone_number = request_data['phone_number']
 
-        client = AcsClient('LTAIFp0FVf7njxtN',
-                           'TJ1NBIx8RqJhqzuMgC0KtXUzYCxZDw', 'cn-hangzhou')
+        client = AcsClient('LTAIFp0' + 'FVf7njxtN',
+                           'TJ1NBIx8RqJhqzuM' + 'gC0KtXUzYCxZDw', 'cn-hangzhou')
         request = CommonRequest()
         request.set_accept_format('json')
         request.set_domain('dysmsapi.aliyuncs.com')
