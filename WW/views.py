@@ -382,8 +382,8 @@ class MessagesView(View):
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
                     break
-            result['add_data'] = message.add_date
-            result['mod_date'] = message.mod_date
+            result['add_data'] = message.add_date.strftime("%Y-%m-%d %H:%M:%S") 
+            result['mod_date'] = message.mod_date.strftime("%Y-%m-%d %H:%M:%S") 
             for i, comment in enumerate(message.comment_set.all()):
                 comment_info = {
                     "comment_id": comment.id,
@@ -557,8 +557,8 @@ class CommentsView(View):
                     result['data']['author']['avatar'] = str(comment.author.avatar)
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like
-                    result['data']['add_date'] = str(comment.add_date)
-                    result['data']['mod_date'] = str(comment.mod_date)
+                    result['data']['add_date'] = comment.add_date.strftime("%Y-%m-%d %H:%M:%S") 
+                    result['data']['mod_date'] = comment.mod_date.strftime("%Y-%m-%d %H:%M:%S") 
                     who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
