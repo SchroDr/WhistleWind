@@ -605,7 +605,7 @@ class CommentsView(View):
                 result['state']['msg'] = 'successful'
                 result['data']['comment_id'] = comm.id
             else:
-                result['state']['msg'] = 'failed'
+                result['state']['msg'] = 'deleted'
                 result['state']['description'] = "is Deleted"
         except Exception as e:
             result['state']['msg'] = 'failed'
