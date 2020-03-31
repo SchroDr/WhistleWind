@@ -109,6 +109,9 @@ class UsersView(View):
             result['data']['phonenumber'] = userInfo.phonenumber
             result['data']['avatar'] = str(userInfo.avatar)
             result['data']['introduction'] = userInfo.introduction
+            result['data']['birth_date'] = str(userInfo.birth_date)
+            result['data']['gender'] = str(userInfo.gender)
+
             '''
             关注的人
             '''
@@ -575,8 +578,14 @@ class CommentsView(View):
                         }
                         result['who_like'].append(oneLike)
                     result['state']['msg'] = 'successful'
-        except:
-            pass
+                else:
+                    result['state']['msg'] = 'deleted'
+                    result['state']['description'] = "is Deleted"
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         result = demjson.decode(str(result))
         # result = json.
         return JsonResponse(result)
