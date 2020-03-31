@@ -245,6 +245,8 @@ class UsersView(View):
                     user.introduction = put['introduction']
                 if 'birth_date' in put:
                     user.birth_date = put['birth_date']
+                if 'gender' in put:
+                    user.gender = put['gender']
                 user.save()
                 result['state']['msg'] = 'successful'
                 result['data']['user_id'] = user_id
