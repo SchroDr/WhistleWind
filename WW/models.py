@@ -40,6 +40,7 @@ class User(models.Model):
     deleted = models.IntegerField("是否被删除", default=0)
     birth_date = models.DateField("出生日期", default=datetime(1980, 1, 1, 0, 0))
     gender = models.CharField("性别", choices = gender_type, default = 'unknown', max_length = 31)
+    registration_date = models.DateTimeField("注册时间", default=timezone.now)
 
     class Meta:
         verbose_name = ("User")
