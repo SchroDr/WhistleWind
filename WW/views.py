@@ -111,7 +111,8 @@ class UsersView(View):
             result['data']['introduction'] = userInfo.introduction
             result['data']['birth_date'] = str(userInfo.birth_date)
             result['data']['gender'] = str(userInfo.gender)
-
+            result['data']['registration_date'] = str(
+                userInfo.registration_date)
             '''
             关注的人
             '''
@@ -242,6 +243,8 @@ class UsersView(View):
                     user.avatar = put['avatar']
                 if 'introduction' in put:
                     user.introduction = put['introduction']
+                if 'birth_date' in put:
+                    user.birth_date = put['birth_date']
                 user.save()
                 result['state']['msg'] = 'successful'
                 result['data']['user_id'] = user_id
@@ -607,7 +610,7 @@ class CommentsView(View):
         }
         delete = demjson.decode(request.body)
         try:
-            comm = models.Comment.objects.get(id=delete['data']['comment_id'])
+            comm = models.Comment.objects.get(id=delete['comment_id'])
             if comm.deleted != 1:
                 comm.deleted = 1
                 comm.save()
