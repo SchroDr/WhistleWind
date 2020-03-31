@@ -383,8 +383,10 @@ class MessagesView(View):
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
                     break
-            result['add_data'] = message.add_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-            result['mod_date'] = message.mod_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+            result['add_data'] = message.add_date.astimezone(
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+            result['mod_date'] = message.mod_date.astimezone(
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
             for i, comment in enumerate(message.comment_set.all()):
                 comment_info = {
                     "comment_id": comment.id,
@@ -554,12 +556,16 @@ class CommentsView(View):
                     result['data']['comment_id'] = comment.id
                     result['data']['msg_id'] = str(comment.msg)
                     result['data']['author']['author_id'] = str(comment.author)
-                    result['data']['author']['username'] = str(comment.author.username)
-                    result['data']['author']['avatar'] = str(comment.author.avatar)
+                    result['data']['author']['username'] = str(
+                        comment.author.username)
+                    result['data']['author']['avatar'] = str(
+                        comment.author.avatar)
                     result['data']['content'] = comment.content
                     result['data']['like'] = comment.like
-                    result['data']['add_date'] = comment.add_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                    result['data']['mod_date'] = comment.mod_date.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    result['data']['add_date'] = comment.add_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    result['data']['mod_date'] = comment.mod_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
@@ -583,7 +589,8 @@ class CommentsView(View):
         # TO DO 删除评论
         result = {
             "state": {
-                "msg": "successful"
+                "msg": "failed",
+                "description": "",
             },
             "data": {
                 "comment_id": 0
@@ -591,14 +598,18 @@ class CommentsView(View):
         }
         delete = demjson.decode(request.body)
         try:
-            comm = models.Comment.objects.get(id=delete['comment_id'])
+            comm = models.Comment.objects.get(id=delete['data']['comment_id'])
             if comm.deleted != 1:
                 comm.deleted = 1
                 comm.save()
                 result['state']['msg'] = 'successful'
                 result['data']['comment_id'] = comm.id
+            else:
+                result['state']['msg'] = 'failed'
+                result['state']['description'] = "is Deleted"
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
