@@ -257,6 +257,7 @@ class UsersView(View):
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
+            result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
@@ -386,7 +387,7 @@ class MessagesView(View):
                 user_info = {
                     "user_id": user.id,
                     "username": user.username,
-                    "avatar": user.avatar.path
+                    "avatar": user.avatar
                 }
                 result['data']['who_dislike'].append(user_info)
                 if i >= 9:
@@ -523,8 +524,11 @@ class CommentsView(View):
             comm.save()
             result['state']['msg'] = 'successful'
             result['data']['comment_id'] = comm.id
-        except:
+        except Exception as e:
             result['state']['msg'] = 'failed'
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
     def get(self, request):
@@ -589,6 +593,7 @@ class CommentsView(View):
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
+            result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
         result = demjson.decode(str(result))
@@ -624,6 +629,7 @@ class CommentsView(View):
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
+            result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)

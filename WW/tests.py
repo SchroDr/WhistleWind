@@ -45,7 +45,7 @@ def createTestDatabase():
             )
             message.save()
     messages = models.Message.objects.all()
-    # 为每条增加10条评论，3张图片
+    # 为每条信息增加10条评论，3张图片，5个点赞，5个点踩
     for message in messages:
         for i in range(10):
             user = random.choice(users)
@@ -60,6 +60,22 @@ def createTestDatabase():
                 message=message, img='media/pic/rua.jpg'
             )
             messageImage.save()
+        for user in random.sample(list(users), 5):
+            message.like += 1
+            message.who_like.add(user)
+            message.save()
+        for user in random.sample(list(users), 5):
+            message.dislike += 1
+            message.who_dislike.add(user)
+            message.save()
+    comments = models.Message.objects.all()
+    # 为每条评论增加5个点赞
+    for comment in comments:
+        for user in random.sample(list(users), 5):
+            comment.like += 1
+            comment.who_like.add(user)
+            comment.save()
+
     # 为每个用户增加9个关注
     for user in users:
         for follow in users:
