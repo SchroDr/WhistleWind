@@ -1,5 +1,6 @@
-from django.db import models
 import django.utils.timezone as timezone
+from django.db import models
+from datetime import datetime
 from django.db.backends.mysql.base import DatabaseFeatures # 关键设置
 DatabaseFeatures.supports_microsecond_precision = False # 关键设置
 
@@ -7,7 +8,8 @@ DatabaseFeatures.supports_microsecond_precision = False # 关键设置
 class Image(models.Model):
     image_type = {
         ('avatar', 'Avatar'),
-        ('universal', 'Universal')
+        ('universal', 'Universal'),
+        ('unknown', 'Unknown')
     }
     id = models.AutoField("图片唯一标识符", primary_key=True)
     img = models.ImageField("存储图片", upload_to="pic", null=False)
@@ -18,6 +20,10 @@ class Image(models.Model):
 
 
 class User(models.Model):
+    gender_type = {
+        ('male', 'Male'),
+        ('female', 'Female')
+    }
     id = models.AutoField("用户唯一标识符", primary_key=True)
     email = models.EmailField("邮箱")
     phonenumber = models.CharField("电话号码", max_length=11)
@@ -32,6 +38,8 @@ class User(models.Model):
         "self", verbose_name="好友", through="Friendship", symmetrical=False, related_name='friend_set')
     introduction = models.TextField("简介", default="Hello, World")
     deleted = models.IntegerField("是否被删除", default=0)
+    birth_date = models.DateField("出生日期", default=datetime(1980, 1, 1, 0, 0))
+    gender = models.CharField("性别", choices = gender_type, default = 'unknown', max_length = 31)
 
     class Meta:
         verbose_name = ("User")
