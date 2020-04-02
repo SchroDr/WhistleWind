@@ -19,7 +19,7 @@ def createTestDatabase():
     初始化测试数据库
     向测试数据库中添加10个用户信息、每个用户有10条信息，每个信息有10条评论
     """
-    # 创建是个用户
+    # 创建10个用户
     for i in range(10):
         #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
         # 理论上邮箱地址是可以包含中文字符的，但是用完整正则规则生成的邮箱地址太过鬼畜所以只用英文字符生成
@@ -97,6 +97,7 @@ class UsersModelTests(TestCase):
         createTestDatabase()
 
     def test_register_works_successfully(self):
+        """正常注册的情况"""
         request_data = {
             "phone_number": exrex.getone(r"1[34578][0-9]{9}$"),
             "veri_code": exrex.getone(r"\d{4}"),
@@ -108,7 +109,33 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['user_id'], 1)
 
-    def test_get_all_user_messages_works_successfully(self):
+    def test_register_works_with_registered_number(self):
+        """使用已注册号码注册的情况"""
+        user = models.User.objects.filter()[0]
+        request_data = {
+            "phone_number": user.phonenumber,
+            "veri_code": exrex.getone(r"\d{4}"),
+            "password": exrex.getone(r"[A-Za-z0-9_]{6,18}")
+        }
+        response = self.c.post(
+            '/ww/users/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'existed')
+
+    def test_register_works_with_wrong_number(self):
+        """使用错误格式的号码注册的情况"""
+        request_data = {
+            "phone_number": exrex.getone(r"1[34578][0-9]{8}$"),
+            "veri_code": exrex.getone(r"\d{4}"),
+            "password": exrex.getone(r"[A-Za-z0-9_]{6,18}")
+        }
+        response = self.c.post(
+            '/ww/users/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_get_basic_user_info(self):
+        """测试用户的基本信息是否返回正确"""
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
@@ -121,31 +148,208 @@ class UsersModelTests(TestCase):
             "messages_start": 0,
             "comments_start": 0
         }
-
         response = self.c.get('/ww/users/', data=request_data,
                               content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['user_id'], request_data['user_id'])
+        self.assertEqual(response.json()['data']
+                         ['username'], user.username)
+        self.assertEqual(response.json()['data']
+                         ['email'], user.email)
+        self.assertEqual(response.json()['data']
+                         ['phonenumber'], user.phonenumber)
+        self.assertEqual(response.json()['data']
+                         ['avatar'], user.avatar)
+        self.assertEqual(response.json()['data']
+                         ['introduction'], user.introduction)
+        self.assertEqual(response.json()['data']
+                         ['birth_date'], user.birth_date.strftime("%Y-%m-%d"))
+        self.assertEqual(response.json()['data']
+                         ['gender'], user.gender)
+        self.assertEqual(response.json()['data']
+                         ['registration_date'], user.registration_date.strftime("%Y-%m-%d"))
+
+    def test_get_user_info_and_messages_info(self):
+        """测试用户已发送的信息是否返回正确"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        message = models.Message.objects.filter(
+            id = response.json()['data']['messages'][0]['message_id']
+        )[0]
         self.assertEqual(
-            len(response.json()['data']['follows']), len(user.follows.all()))
+            response.json()['data']['messages'][0]['title'], message.title
+        )
         self.assertEqual(
-            len(response.json()['data']['followers']), len(user.follow_set.all()))
+            response.json()['data']['messages'][0]['content'], message.content
+        )
         self.assertEqual(
-            len(response.json()['data']['messages']), len(user.message_set.all()))
+            response.json()['data']['messages'][0]['like'], message.like.count()
+        )
         self.assertEqual(
-            len(response.json()['data']['comments']), len(user.comment_set.all()))
+            response.json()['data']['messages'][0]['dislike'], message.dislike.count()
+        )
         self.assertEqual(
-            response.json()['data']['follows_number'], len(user.follows.all()))
+            response.json()['data']['messages'][0]['comments_number'], message.comment_set.count()
+        )
         self.assertEqual(
-            response.json()['data']['followers_number'], len(user.follow_set.all()))
+            len(response.json()['data']['messages'][0]['images']), message.messageimage_set.count()
+        )
+
+    def test_get_user_info_and_comments_info(self):
+        """测试用户已发送的评论是否返回正确"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        comment = models.Comment.objects.filter(
+            id = response.json()['data']['comments'][0]['comment_id']
+        )[0]
         self.assertEqual(
-            response.json()['data']['messages_number'], len(user.message_set.all()))
+            response.json()['data']['comments'][0]['content'], comment.content
+        )
+
+    def test_get_user_info_and_followers_info(self):
+        """测试用户的粉丝是否返回正确"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        follower = models.User.objects.filter(
+            id = response.json()['data']['followers'][0]['user_id']
+        )[0]
         self.assertEqual(
-            response.json()['data']['comments_number'], len(user.comment_set.all()))
+            response.json()['data']['followers'][0]['username'], follower.username
+        )
+        self.assertEqual(
+            response.json()['data']['followers'][0]['avatar'], follower.avatar
+        )
+
+    def test_get_user_info_and_follows_info(self):
+        """测试用户的关注是否返回正确"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        follow = models.User.objects.filter(
+            id = response.json()['data']['follows'][0]['user_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['follow'][0]['username'], follow.username
+        )
+        self.assertEqual(
+            response.json()['data']['follow'][0]['avatar'], follow.avatar
+        )
+
+    def test_get_user_info_and_various_number(self):
+        """测试用户的各类数据是否正确"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(
+            response.json()['data']['follows_number'], user.follows.count())
+        self.assertEqual(
+            response.json()['data']['followers_number'], user.follow_set.count())
+        self.assertEqual(
+            response.json()['data']['messages_number'], user.message_set.count())
+        self.assertEqual(
+            response.json()['data']['comments_number'], user.comment_set.count())
+
+    def test_get_all_user_info_works_successfully(self):
+        """获取所有用户的所有信息的情况，测试能否正确返回应有的数量"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(
+            len(response.json()['data']['follows']), user.follows.count())
+        self.assertEqual(
+            len(response.json()['data']['followers']), user.follow_set.count())
+        self.assertEqual(
+            len(response.json()['data']['messages']), user.message_set.count())
+        self.assertEqual(
+            len(response.json()['data']['comments']), user.comment_set.count())
+        
+
 
     def test_get_part_user_messages_works_successfully(self):
+        """获取用户的部分信息的情况，测试能否正确返回应有的数量"""
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
@@ -169,16 +373,9 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response.json()['data']['followers']), 5)
         self.assertEqual(len(response.json()['data']['messages']), 5)
         self.assertEqual(len(response.json()['data']['comments']), 5)
-        self.assertEqual(
-            response.json()['data']['follows_number'], len(user.follows.all()))
-        self.assertEqual(
-            response.json()['data']['followers_number'], len(user.follow_set.all()))
-        self.assertEqual(
-            response.json()['data']['messages_number'], len(user.message_set.all()))
-        self.assertEqual(
-            response.json()['data']['comments_number'], len(user.comment_set.all()))
 
     def test_get_minimal_user_messages_works_successfully(self):
+        """获取用户的最少信息的情况，测试能否正确返回应有的数量"""
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
@@ -201,16 +398,10 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response.json()['data']['followers']), 0)
         self.assertEqual(len(response.json()['data']['messages']), 0)
         self.assertEqual(len(response.json()['data']['comments']), 0)
-        self.assertEqual(
-            response.json()['data']['follows_number'], len(user.follows.all()))
-        self.assertEqual(
-            response.json()['data']['followers_number'], len(user.follow_set.all()))
-        self.assertEqual(
-            response.json()['data']['messages_number'], len(user.message_set.all()))
-        self.assertEqual(
-            response.json()['data']['comments_number'], len(user.comment_set.all()))
+
 
     def test_update_user_messages_works_successfully(self):
+        """正常更新用户信息的情况"""
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
@@ -233,7 +424,13 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['user_id'], request_data['user_id'])
-        self.assertEqual(user.avatar, "media/pic/029jozv8jp.png")
+        self.assertEqual(user.username, request_data['username'])
+        self.assertEqual(user.email, request_data['email'])
+        self.assertEqual(user.phonenumber, request_data['phonenumber'])
+        self.assertEqual(user.introduction, request_data['introduction'])
+        self.assertEqual(user.avatar, request_data['avatar'])
+        self.assertEqual(user.gender, request_data['gender'])
+        self.assertEqual(user.birth_date.strftime("%Y-%m-%d"), request_data['birth_date'])
 
 
 class MessagesModelTests(TestCase):

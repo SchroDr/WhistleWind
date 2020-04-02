@@ -109,10 +109,10 @@ class UsersView(View):
             result['data']['phonenumber'] = userInfo.phonenumber
             result['data']['avatar'] = str(userInfo.avatar)
             result['data']['introduction'] = userInfo.introduction
-            result['data']['birth_date'] = str(userInfo.birth_date)
+            result['data']['birth_date'] = str(userInfo.birth_date.strftime("%Y-%m-%d"))
             result['data']['gender'] = str(userInfo.gender)
             result['data']['registration_date'] = str(
-                userInfo.registration_date)
+                userInfo.registration_date.strftime("%Y-%m-%d"))
             '''
             关注的人
             '''
