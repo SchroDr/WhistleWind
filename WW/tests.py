@@ -218,7 +218,9 @@ class UsersModelTests(TestCase):
             "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
             "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
             "introduction": "",
-            "avatar": "media/pic/029jozv8jp.png"
+            "avatar": "media/pic/029jozv8jp.png",
+            "gender": "male",
+            "birth_date": "1990-01-31"
         }
         response = self.c.put('/ww/users/', data=request_data,
                               content_type='application/json')
@@ -372,8 +374,10 @@ class MessagesModelTests(TestCase):
         """
         测试能否正确点赞
         """
-        user = models.User.objects.filter()[0]
         message = models.Message.objects.filter()[0]
+        users_liked = message.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
         request_data = {
             "msg_id": message.id,
             "user_id": user.id
@@ -392,8 +396,10 @@ class MessagesModelTests(TestCase):
         """
         测试能否正确点赞
         """
-        user = models.User.objects.filter()[1]
         message = models.Message.objects.filter()[0]
+        users_liked = message.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
         request_data = {
             "msg_id": message.id,
             "user_id": user.id
@@ -414,8 +420,10 @@ class MessagesModelTests(TestCase):
         """
         测试能否正确点踩
         """
-        user = models.User.objects.filter()[0]
         message = models.Message.objects.filter()[0]
+        users_disliked = message.who_dislike.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_disliked, users))[0]
         request_data = {
             "msg_id": message.id,
             "user_id": user.id
@@ -434,8 +442,10 @@ class MessagesModelTests(TestCase):
         """
         测试能否正确点踩
         """
-        user = models.User.objects.filter()[1]
         message = models.Message.objects.filter()[0]
+        users_disliked = message.who_dislike.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_disliked, users))[0]
         request_data = {
             "msg_id": message.id,
             "user_id": user.id
@@ -527,8 +537,10 @@ class CommentsModelTests(TestCase):
         """
         测试能否正确点赞
         """
-        user = models.User.objects.filter()[0]
         comment = models.Comment.objects.filter()[0]
+        users_liked = comment.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
         request_data = {
             "comment_id": comment.id,
             "user_id": user.id
@@ -546,8 +558,10 @@ class CommentsModelTests(TestCase):
         """
         测试能否正确点赞
         """
-        user = models.User.objects.filter()[1]
         comment = models.Comment.objects.filter()[0]
+        users_liked = comment.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
         request_data = {
             "comment_id": comment.id,
             "user_id": user.id

@@ -244,7 +244,7 @@ class UsersView(View):
                 if 'introduction' in put:
                     user.introduction = put['introduction']
                 if 'birth_date' in put:
-                    user.birth_date = put['birth_date']
+                    user.birth_date = datetime.strptime(put['birth_date'],'%Y-%m-%d')   
                 if 'gender' in put:
                     user.gender = put['gender']
                 user.save()
