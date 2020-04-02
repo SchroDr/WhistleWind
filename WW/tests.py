@@ -217,7 +217,7 @@ class UsersModelTests(TestCase):
             "username": "张三",
             "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
             "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
-            "introduction": "",
+            "introduction": "HAHAHA😀",
             "avatar": "media/pic/029jozv8jp.png",
             "gender": "male",
             "birth_date": "1990-01-31"

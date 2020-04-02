@@ -93,6 +93,7 @@ DATABASES = {
         'PORT': '3306',
         'USER': 'ww',
         'PASSWORD': 'mysql',
+        'OPTIONS': {'charset':'utf8mb4'}
     }
 }
 
