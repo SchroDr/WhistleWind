@@ -2,6 +2,7 @@ import exrex
 import random
 import demjson
 from . import models
+from datetime import datetime, timedelta, timezone
 from django.test import TestCase, Client
 from django.http import QueryDict
 from django.test.utils import setup_test_environment
@@ -171,6 +172,26 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['registration_date'], user.registration_date.strftime("%Y-%m-%d"))
 
+    def test_get_basic_user_info_with_wong_id(self):
+        """使用错误的id，测试用户的基本信息"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": 9999,
+            "follows_number": -1,
+            "followers_number": -1,
+            "messages_number": -1,
+            "comments_number": -1,
+            "follows_start": 0,
+            "followers_start": 0,
+            "messages_start": 0,
+            "comments_start": 0
+        }
+        response = self.c.get('/ww/users/', data=request_data,
+                              content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+
     def test_get_user_info_and_messages_info(self):
         """测试用户已发送的信息是否返回正确"""
         user = models.User.objects.all()[0]
@@ -199,10 +220,10 @@ class UsersModelTests(TestCase):
             response.json()['data']['messages'][0]['content'], message.content
         )
         self.assertEqual(
-            response.json()['data']['messages'][0]['like'], message.like.count()
+            response.json()['data']['messages'][0]['like'], message.like
         )
         self.assertEqual(
-            response.json()['data']['messages'][0]['dislike'], message.dislike.count()
+            response.json()['data']['messages'][0]['dislike'], message.dislike
         )
         self.assertEqual(
             response.json()['data']['messages'][0]['comments_number'], message.comment_set.count()
@@ -286,10 +307,10 @@ class UsersModelTests(TestCase):
             id = response.json()['data']['follows'][0]['user_id']
         )[0]
         self.assertEqual(
-            response.json()['data']['follow'][0]['username'], follow.username
+            response.json()['data']['follows'][0]['username'], follow.username
         )
         self.assertEqual(
-            response.json()['data']['follow'][0]['avatar'], follow.avatar
+            response.json()['data']['follows'][0]['avatar'], follow.avatar
         )
 
     def test_get_user_info_and_various_number(self):
@@ -401,7 +422,7 @@ class UsersModelTests(TestCase):
 
 
     def test_update_user_messages_works_successfully(self):
-        """正常更新用户信息的情况"""
+        """使用所有参数，正常更新用户信息的情况"""
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
@@ -431,6 +452,57 @@ class UsersModelTests(TestCase):
         self.assertEqual(user.avatar, request_data['avatar'])
         self.assertEqual(user.gender, request_data['gender'])
         self.assertEqual(user.birth_date.strftime("%Y-%m-%d"), request_data['birth_date'])
+
+    def test_update_user_messages_works_with_wrong_id(self):
+        """使用错误的id，更新用户信息的情况"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": 99999,
+            "username": "张三",
+            "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
+            "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
+            "introduction": "HAHAHA😀",
+            "avatar": "media/pic/029jozv8jp.png",
+            "gender": "male",
+            "birth_date": "1990-01-31"
+        }
+        response = self.c.put('/ww/users/', data=request_data,
+                              content_type='application/json')
+        try:
+            with transaction.atomic():
+                user.refresh_from_db()
+        except Exception as e:
+            print("WTF")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+    
+    def test_update_user_messages_works_successfully_with_part_params(self):
+        """使用部分参数，正常更新用户信息的情况"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "username": "张三",
+            "email": exrex.getone(r"^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$"),
+            "phonenumber": exrex.getone(r"1[34578][0-9]{9}$"),
+            "introduction": "HAHAHA😀",
+            "avatar": "media/pic/029jozv8jp.png",
+            "gender": "male",
+            "birth_date": "1990-01-31"
+        }
+        keys = random.sample(request_data.keys(), 3)
+        for key in keys:
+            del request_data[key]
+        request_data["user_id"] = user.id
+        response = self.c.put('/ww/users/', data=request_data,
+                              content_type='application/json')
+        try:
+            with transaction.atomic():
+                user.refresh_from_db()
+        except Exception as e:
+            print("WTF")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(response.json()['data']
+                         ['user_id'], request_data['user_id'])
 
 
 class MessagesModelTests(TestCase):
@@ -687,13 +759,13 @@ class CommentsModelTests(TestCase):
         createTestDatabase()
 
     def test_post_comments_works_successfully(self):
-        """
-        用于测试发送评论是否正常工作
-        """
+        """用于测试发送评论是否正常工作"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
         request_data = {
-            "user_id": models.User.objects.all()[0].id,
+            "user_id": user.id,
             "content": "ruarua",
-            "msg_id": models.Message.objects.all()[0].id
+            "msg_id": message.id
         }
         response = self.c.post(
             '/ww/comments/', data=request_data, content_type='application/json')
@@ -701,12 +773,50 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
 
-    def test_get_comments_works_successfully(self):
-        """
-        用于测试获取评论是否工作正常
-        """
+    def test_post_comments_works_with_nonexistent_id(self):
+        """使用不存在的用户或者信息id发送评论"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
         request_data = {
-            "comment_id": models.Comment.objects.all()[0].id
+            "user_id": 99999,
+            "content": "ruarua",
+            "msg_id": 99999
+        }
+        response = self.c.post(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+        self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
+
+    def test_post_comments_works_with_deleted_id(self):
+        """使用已删除的用户或者信息id发送评论"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "content": "ruarua",
+            "msg_id": message.id
+        }
+        user.deleted = 1
+        message.deleted = 1
+        user.save()
+        message.save()
+        response = self.c.post(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
+        user.deleted = 0
+        message.deleted = 0
+        user.save()
+        message.save()
+
+
+    def test_get_comments_works_successfully(self):
+        """用于测试获取评论是否工作正常"""
+        comment = models.Comment.objects.all()[0]
+        request_data = {
+            "comment_id": comment.id
         }
         response = self.c.get(
             '/ww/comments/', data=request_data, content_type='application/json')
@@ -714,14 +824,89 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(
             response.json()['data']['comment_id'], request_data['comment_id'])
+        self.assertEqual(
+            response.json()['data']['author']['author_id'], str(comment.author.id)
+        )
+        self.assertEqual(
+            response.json()['data']['author']['username'], comment.author.username
+        )
+        self.assertEqual(
+            response.json()['data']['author']['avatar'], comment.author.avatar
+        )
+        self.assertEqual(
+            response.json()['data']['msg_id'], str(comment.msg.id)
+        )
+        self.assertEqual(
+            response.json()['data']['content'], comment.content
+        )
+        self.assertEqual(
+            response.json()['data']['like'], comment.like
+        )
+        user_like = models.User.filter(
+            id=response.json()['data']['who_like'][0]['user_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['username'], user_like.username
+        )
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['avatar'], user_like.avatar
+        )
+        self.assertEqual(
+            response.json()['data']['add_date'], comment.add_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        self.assertEqual(
+            response.json()['data']['mod_date'], comment.mod_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
 
-    def test_delete_messages_works_successfully(self):
-        """
-        用于测试删除信息是否工作正常
-        """
-
+    def test_get_comments_works_with_wrong_id(self):
+        """使用错误id的情况"""
+        comment = models.Comment.objects.all()[0]
         request_data = {
-            "comment_id": models.Comment.objects.all()[0].id
+            "comment_id": 999999
+        }
+        response = self.c.get(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_get_comments_works_with_deleted_id(self):
+        """请求已删除评论的情况"""
+        comment = models.Comment.objects.all()[0]
+        request_data = {
+            "comment_id": comment.id
+        }
+        comment.deleted = 1
+        comment.save()
+        response = self.c.get(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        comment.deleted = 0
+        comment.save()
+
+    def test_get_comments_works_with_deleted_id(self):
+        """请求删除已删除评论的情况"""
+        comment = models.Comment.objects.all()[0]
+        request_data = {
+            "comment_id": comment.id
+        }
+        comment.deleted = 1
+        comment.save()
+        response = self.c.get(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        comment.deleted = 0
+        comment.save()
+
+
+    def test_delete_comment_works_successfully(self):
+        """正常删除评论的情况"""
+        comment = models.Comment.objects.all()[0]
+        request_data = {
+            "comment_id": comment.id
         }
         response = self.c.delete(
             '/ww/comments/', data=request_data, content_type='application/json')
@@ -729,11 +914,26 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['comment_id'], request_data['comment_id'])
+        try:
+            with transaction.atomic():
+                comment.refresh_from_db()
+        except Exception as e:
+            print("WTF")
+        self.assertEqual(comment.deleted, 1)
+
+    def test_delete_comment_works_with_wrong_id(self):
+        """使用错误id删除评论的情况"""
+        comment = models.Comment.objects.all()[0]
+        request_data = {
+            "comment_id": 99999
+        }
+        response = self.c.delete(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
 
     def test_give_a_like_to_a_comment_works_successfully(self):
-        """
-        测试能否正确点赞
-        """
+        """正确点赞的情况"""
         comment = models.Comment.objects.filter()[0]
         users_liked = comment.who_like.all()
         users = models.User.objects.all()
@@ -752,9 +952,7 @@ class CommentsModelTests(TestCase):
         self.assertIn(user, comment.who_like.all())
 
     def test_give_a_like_to_a_comment_works_unsuccessfully(self):
-        """
-        测试能否正确点赞
-        """
+        """多次点赞的情况"""
         comment = models.Comment.objects.filter()[0]
         users_liked = comment.who_like.all()
         users = models.User.objects.all()
@@ -773,6 +971,46 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['data']['comment_id'], comment.id)
         self.assertEqual(response.json()['data']['like'], comment.like)
         self.assertIn(user, comment.who_like.all())
+
+    def test_give_a_like_to_a_comment_works_with_wrong_id(self):
+        """使用错误id点赞的情况"""
+        comment = models.Comment.objects.filter()[0]
+        users_liked = comment.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
+        request_data = {
+            "comment_id": 99999,
+            "user_id": 99999
+        }
+        response = self.c.post(
+            '/ww/comments/like/', data=request_data, content_type='application/json')
+        comment = models.Comment.objects.filter(id=comment.id)[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_give_a_like_to_a_comment_works_with_deleted_id(self):
+        """使用已删除id点赞的情况"""
+        comment = models.Comment.objects.filter()[0]
+        users_liked = comment.who_like.all()
+        users = models.User.objects.all()
+        user = list(filter(lambda u: u not in users_liked, users))[0]
+        user.deleted = 1
+        comment.deleted = 1
+        user.save()
+        comment.save()
+        request_data = {
+            "comment_id": comment.id,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/comments/like/', data=request_data, content_type='application/json')
+        comment = models.Comment.objects.filter(id=comment.id)[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        user.deleted = 0
+        comment.deleted = 0
+        user.save()
+        comment.save()
 
 
 class ImagesModelTests(TestCase):
