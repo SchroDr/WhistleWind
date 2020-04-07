@@ -516,9 +516,7 @@ class MessagesModelTests(TestCase):
         createTestDatabase()
 
     def test_post_messages_works_successfully(self):
-        """
-        用于测试发送信息是否正常工作
-        """
+        """正常发送信息"""
         request_data = {
             "user_id": models.User.objects.all()[0].id,
             "title": "rua",
@@ -545,7 +543,16 @@ class MessagesModelTests(TestCase):
                 {
                     "image_url": "media/pic/rua.jpg"
                 }
-            ]
+            ],
+            "tags": [
+                {
+                    "tag": "LOL"
+                },
+                {
+                    "tag": "GOG"
+                }
+            ],
+            "device": "NOKIA"
         }
         response = self.c.post(
             '/ww/messages/', data=request_data, content_type='application/json')
@@ -555,6 +562,10 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['msg_id'], 1)
         self.assertEqual(len(message.messageimage_set.all()), 3)
+        self.assertEqual(message.tag.count(), len(request_data['tags']))
+        self.assertEqual(message.mention.count(), len(request_data['mentioned']))
+        self.assertEqual(message.device, request_data['device'])
+
 
     def test_get_messages_works_successfully(self):
         """

@@ -53,6 +53,14 @@ class User(models.Model):
         # return reverse("User_detail", kwargs={"pk": self.pk})
         pass
 
+class Tag(models.Model):
+    id = models.AutoField("标签唯一标识符", primary_key=True)
+    tag = models.TextField("标签", max_length=62)
+
+    class Meta:
+        verbose_name = ("Message")
+        verbose_name_plural = ("Messages")
+
 
 class Message(models.Model):
     id = models.AutoField("信息唯一标识符", primary_key=True)
@@ -68,6 +76,12 @@ class Message(models.Model):
         User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True)
     who_dislike = models.ManyToManyField(
         User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
+    tag = models.ManyToManyField(
+        Tag, verbose_name="该信息的tag", related_name='message_tag_set', blank=True
+    )
+    mention = models.ManyToManyField(
+        User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True
+    )
     add_date = models.DateTimeField("发布日期", default=timezone.now)
     mod_date = models.DateTimeField("最后修改日期", auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)
