@@ -109,7 +109,8 @@ class UsersView(View):
             result['data']['phonenumber'] = userInfo.phonenumber
             result['data']['avatar'] = str(userInfo.avatar)
             result['data']['introduction'] = userInfo.introduction
-            result['data']['birth_date'] = str(userInfo.birth_date.strftime("%Y-%m-%d"))
+            result['data']['birth_date'] = str(
+                userInfo.birth_date.strftime("%Y-%m-%d"))
             result['data']['gender'] = str(userInfo.gender)
             result['data']['registration_date'] = str(
                 userInfo.registration_date.strftime("%Y-%m-%d"))
@@ -159,11 +160,21 @@ class UsersView(View):
             res = self.request_return_user(
                 messages, messages_start, messages_number)
             for i in res:
+                mesImg = models.MessageImage.objects.filter(message=i.id)
+                if len(mesImg) >= 3:
+                    mesImg = mesImg[:3]
+                img = []
+                for j in mesImg:
+                    img.append(str(j))
                 result['data']['messages'].append(
                     {
                         "message_id": str(i.id),
                         "title": i.title,
-                        "content": i.content
+                        "content": i.content,
+                        "like": i.like,
+                        "dislike": i.dislike,
+                        "comments_number": len(models.Comment.objects.filter(msg=i.id)),
+                        "images": img,
                     }
                 )
             '''
@@ -244,7 +255,8 @@ class UsersView(View):
                 if 'introduction' in put:
                     user.introduction = put['introduction']
                 if 'birth_date' in put:
-                    user.birth_date = datetime.strptime(put['birth_date'],'%Y-%m-%d')   
+                    user.birth_date = datetime.strptime(
+                        put['birth_date'], '%Y-%m-%d')
                 if 'gender' in put:
                     user.gender = put['gender']
                 user.save()
@@ -253,7 +265,7 @@ class UsersView(View):
                 # except:
                 #     result['state']['msg'] = 'failed'
             else:
-                result['state']['msg'] = 'failed'
+                result['state']['msg'] = 'wrong'
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -590,6 +602,8 @@ class CommentsView(View):
                 else:
                     result['state']['msg'] = 'deleted'
                     result['state']['description'] = "is Deleted"
+            else:
+                result['state']['msg'] = 'wrong'
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
