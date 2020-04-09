@@ -70,12 +70,20 @@ def createTestDatabase():
             message.who_dislike.add(user)
             message.save()
     comments = models.Message.objects.all()
-    # 为每条评论增加5个点赞
+    # 为每条评论增加5个点赞，5个子评论
     for comment in comments:
         for user in random.sample(list(users), 5):
             comment.like += 1
             comment.who_like.add(user)
             comment.save()
+            child_comment = models.Comment.objects.create(
+                msg = comment.msg,
+                author = user,
+                type = 'child',
+                reply_to = comment.author,
+                parent_comment = comment
+            )
+            child_comment.save()
 
     # 为每个用户增加9个关注
     for user in users:
@@ -517,8 +525,9 @@ class MessagesModelTests(TestCase):
 
     def test_post_messages_works_successfully(self):
         """正常发送信息"""
+        user = models.User.objects.all()[0]
         request_data = {
-            "user_id": models.User.objects.all()[0].id,
+            "user_id": user.id,
             "title": "rua",
             "content": "ruarua",
             "position": {
@@ -565,6 +574,99 @@ class MessagesModelTests(TestCase):
         self.assertEqual(message.tag.count(), len(request_data['tags']))
         self.assertEqual(message.mention.count(), len(request_data['mentioned']))
         self.assertEqual(message.device, request_data['device'])
+
+    def test_post_messages_works_with_non_existent_id(self):
+        """使用错误的id发送信息"""
+        request_data = {
+            "user_id": 99999,
+            "title": "rua",
+            "content": "ruarua",
+            "position": {
+                "pos_x": 63.9734911653,
+                "pos_y": 86.36421952785102
+            },
+            "mentioned": [
+                {
+                    "user_id": 2
+                },
+                {
+                    "user_id": 3
+                }
+            ],
+            "images": [
+                {
+                    "image_url": "media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "media/pic/rua.jpg"
+                }
+            ],
+            "tags": [
+                {
+                    "tag": "LOL"
+                },
+                {
+                    "tag": "GOG"
+                }
+            ],
+            "device": "NOKIA"
+        }
+        response = self.c.post(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_post_messages_works_with_deleted_id(self):
+        """使用已删除的id发送信息"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "title": "rua",
+            "content": "ruarua",
+            "position": {
+                "pos_x": 63.9734911653,
+                "pos_y": 86.36421952785102
+            },
+            "mentioned": [
+                {
+                    "user_id": 2
+                },
+                {
+                    "user_id": 3
+                }
+            ],
+            "images": [
+                {
+                    "image_url": "media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "media/pic/rua.jpg"
+                }
+            ],
+            "tags": [
+                {
+                    "tag": "LOL"
+                },
+                {
+                    "tag": "GOG"
+                }
+            ],
+            "device": "NOKIA"
+        }
+        user.deleted = 1
+        user.save()
+        response = self.c.post(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        user.deleted = 0
+        user.save()
 
 
     def test_get_messages_works_successfully(self):
@@ -822,10 +924,76 @@ class CommentsModelTests(TestCase):
         user.save()
         message.save()
 
+    def test_post_comments_works_successfully(self):
+        """用于测试发送子评论是否正常工作"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
+        parent_comment = message.comment_set.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "content": "ruarua",
+            "msg_id": message.id,
+            'parent_comment_id': parent_comment.id,
+            'reply_to': parent_comment.author.id
+        }
+        response = self.c.post(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
+
+    def test_post_comments_works_with_nonexistent_id(self):
+        """使用不存在的用户或者信息id发送子评论"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
+        parent_comment = message.comment_set.all()[0]
+        request_data = {
+            "user_id": 99999,
+            "content": "ruarua",
+            "msg_id": 99999,
+            'parent_comment_id': 99999,
+            'reply_to': 99999
+        }
+        response = self.c.post(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+        self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
+
+    def test_post_comments_works_with_deleted_id(self):
+        """使用已删除的用户或者信息id发送子评论"""
+        user = models.User.objects.all()[0]
+        message = models.Message.objects.all()[0]
+        parent_comment = message.comment_set.all()[0]
+        request_data = {
+            "user_id": user.id,
+            "content": "ruarua",
+            "msg_id": message.id,
+            'parent_comment_id': parent_comment.id,
+            'reply_to': parent_comment.author.id
+        }
+        user.deleted = 1
+        message.deleted = 1
+        parent_comment.deleted = 1
+        user.save()
+        message.save()
+        parent_comment.deleted.save()
+        response = self.c.post(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
+        user.deleted = 0
+        message.deleted = 0
+        parent_comment.deleted = 0
+        user.save()
+        message.save()
+        parent_comment.save()
+
 
     def test_get_comments_works_successfully(self):
         """用于测试获取评论是否工作正常"""
-        comment = models.Comment.objects.all()[0]
+        comment = models.Comment.objects.filter(type='parent')[0]
         request_data = {
             "comment_id": comment.id
         }
@@ -869,6 +1037,79 @@ class CommentsModelTests(TestCase):
         self.assertEqual(
             response.json()['data']['mod_date'], comment.mod_date.astimezone(
                         timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        child_comment = models.Comment.objects.filter(
+            id=response.json()['data']['child_comments'][0]['comment_id']
+            )[0]
+        self.assertEqual(
+            response.json()['data']['child_comments'][0]['content'], child_comment.content
+        )
+        self.assertEqual(
+            response.json()['data']['child_comments'][0]['like'], child_comment.like
+        )
+        self.assertEqual(
+            response.json()['data']['child_comments'][0]['author']['author_id'], child_comment.author.id
+        )
+        self.assertEqual(
+            response.json()['data']['child_comments'][0]['author']['username'], child_comment.author.username
+        )
+        self.assertEqual(
+            response.json()['data']['child_comments'][0]['author']['avatar'], child_comment.author.avatar
+        )
+        
+
+    def test_get_comments_works_successfully(self):
+        """用于测试获取子评论是否工作正常"""
+        comment = models.Comment.objects.filter(type='child')[0]
+        request_data = {
+            "comment_id": comment.id
+        }
+        response = self.c.get(
+            '/ww/comments/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(
+            response.json()['data']['comment_id'], request_data['comment_id'])
+        self.assertEqual(
+            response.json()['data']['author']['author_id'], str(comment.author.id)
+        )
+        self.assertEqual(
+            response.json()['data']['author']['username'], comment.author.username
+        )
+        self.assertEqual(
+            response.json()['data']['author']['avatar'], comment.author.avatar
+        )
+        self.assertEqual(
+            response.json()['data']['msg_id'], str(comment.msg.id)
+        )
+        self.assertEqual(
+            response.json()['data']['content'], comment.content
+        )
+        self.assertEqual(
+            response.json()['data']['like'], comment.like
+        )
+        user_like = models.User.filter(
+            id=response.json()['data']['who_like'][0]['user_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['username'], user_like.username
+        )
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['avatar'], user_like.avatar
+        )
+        self.assertEqual(
+            response.json()['data']['add_date'], comment.add_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        self.assertEqual(
+            response.json()['data']['mod_date'], comment.mod_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        self.assertEqual(
+            response.json()['data']['reply_to'], comment.reply_to.id
+        )
+        self.assertEqual(
+            response.json()['data']['parent_comment_id'], comment.parent_comment.id
         )
 
     def test_get_comments_works_with_wrong_id(self):
