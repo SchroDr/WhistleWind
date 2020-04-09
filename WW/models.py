@@ -18,6 +18,12 @@ class Image(models.Model):
     upload_date = models.DateTimeField('保存日期', default=timezone.now)
     size = models.FloatField("图片大小，单位为Mb", null=True)
 
+class Video(models.Model):
+    id = models.AutoField("图片唯一标识符", primary_key=True)
+    video = models.FileField("存储视频", upload_to="video", null=False)
+    upload_date = models.DateTimeField('保存日期', default=timezone.now)
+    size = models.FloatField("图片大小，单位为Mb", null=True)
+
 
 class User(models.Model):
     gender_type = {
