@@ -73,14 +73,14 @@ class Message(models.Model):
     like = models.IntegerField("点赞数", default=0)
     dislike = models.IntegerField("点踩数", default=0)
     who_like = models.ManyToManyField(
-        User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True)
+        User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True, null=True)
     who_dislike = models.ManyToManyField(
-        User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
+        User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True, null=True)
     tag = models.ManyToManyField(
-        Tag, verbose_name="该信息的tag", related_name='message_tag_set', blank=True
+        Tag, verbose_name="该信息的tag", related_name='message_tag_set', blank=True, null=True
     )
     mention = models.ManyToManyField(
-        User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True
+        User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True, null=True
     )
     add_date = models.DateTimeField("发布日期", default=timezone.now)
     mod_date = models.DateTimeField("最后修改日期", auto_now=True)
@@ -104,10 +104,22 @@ class Comment(models.Model):
                             verbose_name="该评论所属信息", default='')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                verbose_name="该评论所属用户", related_name='comment_set', default='')
+    #当该评论为子评论时，则使用reply_to参数，其为该评论所回复的用户
+    #当该评论非子评论时，则该参数为空
+    reply_to = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="该评论所回复的用户", 
+        related_name='comment_reply_to_set', blank=True, null=True
+    )
+    #当该评论为子评论时，则使用parent_comment参数，其为该评论所属的父评论
+    #当该评论非子评论时，则该参数为空
+    parent_comment = models.ForeignKey(
+        "self", on_delete=models.CASCADE, verbose_name="该评论属的父评论", 
+        related_name='comment_parent_comment_set', blank=True, null=True
+    )
     content = models.TextField("评论内容", default="Hello")
     like = models.IntegerField("点赞数", default=0)
     who_like = models.ManyToManyField(
-        User, verbose_name="点赞该评论的用户", related_name='comment_who_like_set', blank=True)
+        User, verbose_name="点赞该评论的用户", related_name='comment_who_like_set', blank=True, null=True)
     add_date = models.DateTimeField('保存日期', default=timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)
