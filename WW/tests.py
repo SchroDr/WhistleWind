@@ -20,6 +20,11 @@ def createTestDatabase():
     初始化测试数据库
     向测试数据库中添加10个用户信息、每个用户有5条信息，每个信息有5条评论
     """
+    # 创建2个tag
+    tag_1 = models.Tag.objects.create(tag="C")
+    tag_1.save()
+    tag_2 = models.Tag.objects.create(tag="Python")
+    tag_2.save()
     # 创建10个用户
     for i in range(10):
         #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
@@ -44,6 +49,10 @@ def createTestDatabase():
                 content="Heeeeeeeeeeeeeeeelo",
                 author=user
             )
+            message.tag.add(tag_1)
+            message.tag.add(tag_2)
+            for mention_user in random.sample(list(users), 3):
+                message.mention.add(mention_user)
             message.save()
     messages = models.Message.objects.all()
     # 为每条信息增加10条评论，3张图片，5个点赞，5个点踩
@@ -670,9 +679,7 @@ class MessagesModelTests(TestCase):
 
 
     def test_get_messages_works_successfully(self):
-        """
-        用于测试获取信息是否工作正常
-        """
+        """用于测试获取信息详情是否工作正常"""
         message = models.Message.objects.all()[0]
         request_data = {
             "msg_id": message.id,
@@ -685,11 +692,104 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['msg_id'], request_data['msg_id'])
+        self.assertEqual(response.json()['data']
+                         ['title'], message.title)
+        self.assertEqual(response.json()['data']
+                         ['content'], message.content)
+        self.assertEqual(response.json()['data']
+                         ['position']['pos_x'], str(message.pos_x))
+        self.assertEqual(response.json()['data']
+                         ['position']['pos_y'], str(message.pos_y))
+        self.assertEqual(response.json()['data']
+                         ['author']['author_id'], message.author.id)
+        self.assertEqual(response.json()['data']
+                         ['author']['username'], message.author.username)
+        self.assertEqual(response.json()['data']
+                         ['author']['avatar'], message.author.avatar)
+        self.assertEqual(response.json()['data']
+                         ['like'], str(message.like))
+        user_like = models.User.objects.filter(
+            id=response.json()['data']['who_like'][0]['user_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['username'], user_like.username
+        )
+        self.assertEqual(
+            response.json()['data']['who_like'][0]['avatar'], user_like.avatar
+        )
+        self.assertEqual(
+            response.json()['data']['add_date'], message.add_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        self.assertEqual(
+            response.json()['data']['mod_date'], message.mod_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+        )
+        comment = models.User.objects.filter(
+            id=response.json()['data']['comments'][0]['comment_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['comments'][0]['content'], comment.content
+        )
+        self.assertEqual(
+            response.json()['data']['comments'][0]['like'], str(comment.like)
+        )
+        comment_author = models.User.objects.filter(
+            id=response.json()['data']['comments'][0]['author']['author_id']
+        )[0]
+        self.assertEqual(
+            response.json()['data']['comments'][0]['author']['username'], comment_author.username
+        )
+        self.assertEqual(
+            response.json()['data']['comments'][0]['author']['username'], comment_author.avatar
+        )
+        self.assertEqual(
+            len(response.json()['data']['images']), message.messageimage_set.count()
+        )
+        self.assertEqual(
+            len(response.json()['data']['mentioned']), message.mention.count()
+        )
+        self.assertEqual(
+            len(response.json()['data']['tags']), message.tag.count()
+        )
+        self.assertEqual(
+            response.json()['data']['device'], message.device
+        )
+
+
+    def test_get_messages_works_with_wrong_id(self):
+        """使用错误id的情况"""
+        message = models.Message.objects.all()[0]
+        request_data = {
+            "msg_id": 99999,
+            "who_like_limit": 10,
+            "who_dislike_limit": 10
+        }
+        response = self.c.get(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_get_messages_works_with_deleted_id(self):
+        """使用已删除id的情况"""
+        message = models.Message.objects.all()[0]
+        request_data = {
+            "msg_id": 99999,
+            "who_like_limit": 10,
+            "who_dislike_limit": 10
+        }
+        message.deleted = 1
+        message.save()
+        response = self.c.get(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        message.deleted = 0
+        message.save()
+
 
     def test_put_messages_works_successfully(self):
-        """
-        用于测试修改信息是否工作正常
-        """
+        """用于测试修改信息是否工作正常"""
         request_data = {
             "msg_id": models.Message.objects.all()[0].id,
             "title": "NewTitle",
@@ -706,6 +806,15 @@ class MessagesModelTests(TestCase):
                 {
                     "image_url": "/media/pic/rua.jpg"
                 }
+            ],
+            "device": "MOTOR",
+            "tags": [
+                {
+                    "tag": "CYBERPUPNK"
+                },
+                {
+                    "tag": "MORI"
+                }
             ]
         }
         response = self.c.put(
@@ -716,27 +825,133 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['msg_id'], request_data['msg_id'])
-        self.assertEqual(len(message.messageimage_set.all()), 2)
+        self.assertEqual(len(message.messageimage_set.all()), len(request_data['images']))
+        self.assertEqual(len(message.tag.all()), len(request_data['tags']))
+        self.assertEqual(message.device, request_data['device'])
+
+    def test_put_messages_works_with_wrong_id(self):
+        """使用错误id的情况"""
+        request_data = {
+            "msg_id": 99999,
+            "title": "NewTitle",
+            "content": "NewContent",
+            "mentioned": [
+                {
+                    "user_id": 2
+                }
+            ],
+            "images": [
+                {
+                    "image_url": "/media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "/media/pic/rua.jpg"
+                }
+            ],
+            "device": "MOTOR",
+            "tags": [
+                {
+                    "tag": "CYBERPUPNK"
+                },
+                {
+                    "tag": "MORI"
+                }
+            ]
+        }
+        response = self.c.put(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(
+            id=response.json()['data']['msg_id'])[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_put_messages_works_with_deleted_id(self):
+        """使用已删除id的情况"""
+        message = models.Message.objects.all()[0]
+        request_data = {
+            "msg_id": message.id,
+            "title": "NewTitle",
+            "content": "NewContent",
+            "mentioned": [
+                {
+                    "user_id": 2
+                }
+            ],
+            "images": [
+                {
+                    "image_url": "/media/pic/rua.jpg"
+                },
+                {
+                    "image_url": "/media/pic/rua.jpg"
+                }
+            ],
+            "device": "MOTOR",
+            "tags": [
+                {
+                    "tag": "CYBERPUPNK"
+                },
+                {
+                    "tag": "MORI"
+                }
+            ]
+        }
+        message.deleted = 1
+        message.save()
+        response = self.c.put(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(
+            id=response.json()['data']['msg_id'])[0]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+        message.deleted = 0
+        message.save()
+
 
     def test_delete_messages_works_successfully(self):
-        """
-        用于测试删除信息是否工作正常
-        """
-
+        """用于测试删除信息是否工作正常"""
         request_data = {
             "msg_id": models.Message.objects.all()[0].id
         }
         response = self.c.delete(
             '/ww/messages/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(
+            id=request_data['msg_id']
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['msg_id'], request_data['msg_id'])
+        self.assertEqual(message.deleted, 1)
+
+    def test_delete_messages_works_with_wrong_id(self):
+        """使用错误id的情况"""
+        request_data = {
+            "msg_id": 99999
+        }
+        response = self.c.delete(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(
+            id=request_data['msg_id']
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'wrong')
+
+    def test_delete_messages_works_with_deleted_id(self):
+        """使用已删除id的情况"""
+        request_data = {
+            "msg_id": 99999
+        }
+        response = self.c.delete(
+            '/ww/messages/', data=request_data, content_type='application/json')
+        message = models.Message.objects.filter(
+            id=request_data['msg_id']
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'deleted')
+
 
     def test_get_a_set_messages_works_successfully(self):
-        """
-        测试能否正确获取一组信息
-        """
+        """测试能否正确获取一组信息"""
         user = models.User.objects.filter()[0]
         request_data = {
             "pos_x": 63.9734911653,
@@ -1021,7 +1236,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(
             response.json()['data']['like'], comment.like
         )
-        user_like = models.User.filter(
+        user_like = models.User.objects.filter(
             id=response.json()['data']['who_like'][0]['user_id']
         )[0]
         self.assertEqual(
