@@ -924,7 +924,7 @@ class CommentsModelTests(TestCase):
         user.save()
         message.save()
 
-    def test_post_comments_works_successfully(self):
+    def test_post_child_comments_works_successfully(self):
         """用于测试发送子评论是否正常工作"""
         user = models.User.objects.all()[0]
         message = models.Message.objects.all()[0]
@@ -942,7 +942,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
 
-    def test_post_comments_works_with_nonexistent_id(self):
+    def test_post_child_comments_works_with_nonexistent_id(self):
         """使用不存在的用户或者信息id发送子评论"""
         user = models.User.objects.all()[0]
         message = models.Message.objects.all()[0]
@@ -960,7 +960,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'wrong')
         self.assertGreaterEqual(response.json()['data']['comment_id'], 1)
 
-    def test_post_comments_works_with_deleted_id(self):
+    def test_post_child_comments_works_with_deleted_id(self):
         """使用已删除的用户或者信息id发送子评论"""
         user = models.User.objects.all()[0]
         message = models.Message.objects.all()[0]
@@ -1058,7 +1058,7 @@ class CommentsModelTests(TestCase):
         )
         
 
-    def test_get_comments_works_successfully(self):
+    def test_get_child_comments_works_successfully(self):
         """用于测试获取子评论是否工作正常"""
         comment = models.Comment.objects.filter(type='child')[0]
         request_data = {
