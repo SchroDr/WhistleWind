@@ -514,7 +514,8 @@ class CommentsView(View):
         # TO DO 发送评论
         result = {
             "state": {
-                "msg": "successful"
+                "msg": "failed",
+                "description": ""
             },
             "data": {
                 "comment_id": 0
@@ -532,12 +533,15 @@ class CommentsView(View):
             comm = models.Comment.objects.create(
                 msg=mess,
                 content=comment['content'],
-                author=user)
+                author=user,
+                type="parent",
+            )
             comm.save()
             result['state']['msg'] = 'successful'
             result['data']['comment_id'] = comm.id
         except Exception as e:
             result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
@@ -558,13 +562,22 @@ class CommentsView(View):
                 "like": 0,
                 "who_like": [
                     {
-                        "user_id": 0,
-                        "username": "",
-                        "avatar": ""
+                        # "user_id": 0,
+                        # "username": "",
+                        # "avatar": ""
                     }
                 ],
                 "add_date": "",
-                "mod_date": ""
+                "mod_date": "",
+                "reply_to": "",
+                "parent_comment_id": "",
+                "child_commes": [
+                    {
+                        # "comment_id": 0,
+                        # "content": "",
+                        # "like": "",
+                    }
+                ]
             },
             "state": {
                 "msg": "failed"
@@ -590,6 +603,18 @@ class CommentsView(View):
                         timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                     result['data']['mod_date'] = comment.mod_date.astimezone(
                         timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                    result['data']['reply_to'] = comment.reply_to
+                    result['data']['parent_comment_id'] = comment.parent_comment
+                    if comment.type == "parent":
+                        child_comment = models.Comment.objects.filter(
+                            type="child", reply_to=comment_id)
+                        for i in child_comment:
+                            oneChild = {
+                                "comment_id": i.id,
+                                'content': i.content,
+                                'like': i.like,
+                            }
+                            result['data']['child_commes'].append(oneChild)
                     who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
@@ -648,10 +673,44 @@ class CommentsView(View):
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
-
-def commentsChildComments(response):
-    #TO DO 接收子评论
-    pass
+    def commentsChildComments(self, request):
+        # TO DO 接收子评论
+        result = {
+            "state": {
+                "msg": "failed",
+                "description": ""
+            },
+            "data": {
+                "comment_id": 0
+            }
+        }
+        comment = demjson.decode(request.body)
+    #       "user_id": "",
+    #   "reply_to": "",
+    #   "content": "",
+    #   "parent_comment_id": "",
+    #   "msg_id": ""
+        try:
+            user = models.User.objects.filter(id=comment['user_id'])[0]
+            mess = models.Message.objects.filter(id=comment['msg_id'])[0]
+            comm = models.Comment.objects.create(
+                msg=mess,
+                content=comment['content'],
+                author=user,
+                type="child",
+                reply_to=comment['reply_to'],
+                parent_comment=comment['parent_comment_id']
+            )
+            comm.save()
+            result['state']['msg'] = 'successful'
+            result['data']['comment_id'] = comm.id
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+        pass
 # jhc-----------------------------------
 
 
