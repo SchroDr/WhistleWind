@@ -647,6 +647,11 @@ class CommentsView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
+
+def commentsChildComments(response):
+    #TO DO 接收子评论
+    pass
 # jhc-----------------------------------
 
 
