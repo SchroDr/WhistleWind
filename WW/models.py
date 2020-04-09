@@ -73,14 +73,14 @@ class Message(models.Model):
     like = models.IntegerField("点赞数", default=0)
     dislike = models.IntegerField("点踩数", default=0)
     who_like = models.ManyToManyField(
-        User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True, null=True)
+        User, verbose_name="点赞该信息的用户", related_name='message_who_like_set', blank=True)
     who_dislike = models.ManyToManyField(
-        User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True, null=True)
+        User, verbose_name="点踩该信息的用户", related_name='message_who_dislike_set', blank=True)
     tag = models.ManyToManyField(
-        Tag, verbose_name="该信息的tag", related_name='message_tag_set', blank=True, null=True
+        Tag, verbose_name="该信息的tag", related_name='message_tag_set', blank=True
     )
     mention = models.ManyToManyField(
-        User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True, null=True
+        User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True
     )
     add_date = models.DateTimeField("发布日期", default=timezone.now)
     mod_date = models.DateTimeField("最后修改日期", auto_now=True)
@@ -125,7 +125,7 @@ class Comment(models.Model):
     content = models.TextField("评论内容", default="Hello")
     like = models.IntegerField("点赞数", default=0)
     who_like = models.ManyToManyField(
-        User, verbose_name="点赞该评论的用户", related_name='comment_who_like_set', blank=True, null=True)
+        User, verbose_name="点赞该评论的用户", related_name='comment_who_like_set', blank=True)
     add_date = models.DateTimeField('保存日期', default=timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)

@@ -18,7 +18,7 @@ yyy老师曾曰：开发的第一步是做先做好测试！
 def createTestDatabase():
     """
     初始化测试数据库
-    向测试数据库中添加10个用户信息、每个用户有10条信息，每个信息有10条评论
+    向测试数据库中添加10个用户信息、每个用户有5条信息，每个信息有5条评论
     """
     # 创建10个用户
     for i in range(10):
@@ -36,7 +36,7 @@ def createTestDatabase():
     users = models.User.objects.all()
     # 为每个用户增加10条消息
     for user in users:
-        for i in range(10):
+        for i in range(5):
             message = models.Message.objects.create(
                 pos_x=63.9734911653,
                 pos_y=86.36421952785102,
@@ -48,7 +48,7 @@ def createTestDatabase():
     messages = models.Message.objects.all()
     # 为每条信息增加10条评论，3张图片，5个点赞，5个点踩
     for message in messages:
-        for i in range(10):
+        for i in range(5):
             user = random.choice(users)
             comment = models.Comment.objects.create(
                 msg=message,
@@ -69,8 +69,8 @@ def createTestDatabase():
             message.dislike += 1
             message.who_dislike.add(user)
             message.save()
-    comments = models.Message.objects.all()
-    # 为每条评论增加5个点赞，5个子评论
+    comments = models.Comment.objects.all()
+    # 为每条评论增加5个点赞，2个子评论
     for comment in comments:
         for user in random.sample(list(users), 5):
             comment.like += 1
@@ -382,10 +382,10 @@ class UsersModelTests(TestCase):
         user = models.User.objects.all()[0]
         request_data = {
             "user_id": user.id,
-            "follows_number": 5,
-            "followers_number": 5,
-            "messages_number": 5,
-            "comments_number": 5,
+            "follows_number": 3,
+            "followers_number": 3,
+            "messages_number": 3,
+            "comments_number": 3,
             "follows_start": 0,
             "followers_start": 0,
             "messages_start": 0,
@@ -398,10 +398,10 @@ class UsersModelTests(TestCase):
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
                          ['user_id'], request_data['user_id'])
-        self.assertEqual(len(response.json()['data']['follows']), 5)
-        self.assertEqual(len(response.json()['data']['followers']), 5)
-        self.assertEqual(len(response.json()['data']['messages']), 5)
-        self.assertEqual(len(response.json()['data']['comments']), 5)
+        self.assertEqual(len(response.json()['data']['follows']), 3)
+        self.assertEqual(len(response.json()['data']['followers']), 3)
+        self.assertEqual(len(response.json()['data']['messages']), 3)
+        self.assertEqual(len(response.json()['data']['comments']), 3)
 
     def test_get_minimal_user_messages_works_successfully(self):
         """获取用户的最少信息的情况，测试能否正确返回应有的数量"""
