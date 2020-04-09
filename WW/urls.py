@@ -20,5 +20,6 @@ urlpatterns = [
     url(r'^comments/child_comments/$', views.commentsChildComments, name='commentsChildComments'),
 
     url(r'^images/$', views.ImagesView.as_view(), name='images'),
+    url(r'^videos/$', views.VideosView.as_view(), name='videos'),
     url(r'^static_resources/$', views.staticResources, name='staticResources')
 ]

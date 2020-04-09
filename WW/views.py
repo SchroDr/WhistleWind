@@ -719,9 +719,7 @@ Image模块由SchroDr绝赞划水中！
 
 
 class ImagesView(View):
-    """
-    本模块用于上传下载图片
-    """
+    """本模块用于上传下载图片"""
 
     def post(self, request):
         # TO DO 上传图片
@@ -757,6 +755,56 @@ class ImagesView(View):
         # TO DO 返回图片
         try:
             url = request.GET.get('image_url')
+            url = os.path.join(PROJECT_ROOT, url)
+            return FileResponse(open(url, 'rb'))
+        except Exception as e:
+            result = {
+                "state": {
+                    "msg": "",
+                    "description": ""
+                }
+            }
+            result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
+
+class VideosView(View):
+    """本模块用于上传下载视频"""
+
+    def post(self, request):
+        # TO DO 上传视频
+        result = {
+            "data": {
+                "video_url": "",
+                "description": ""
+            },
+            "state": {
+                "msg": ""
+            }
+        }
+        try:
+            video_file = request.FILES.get("video")
+            video = models.Video.objects.create(
+                img=video_file
+            )
+            video.save()
+            result['data']['video_url'] = video.video.url
+            result['state']['msg'] = 'successful'
+            return JsonResponse(result)
+        except Exception as e:
+            result['state']['msg'] = 'failed'
+            result['state']['description'] = str(repr(e))
+            result.pop('data')
+            print('\nrepr(e):\t', repr(e))
+            print('traceback.print_exc():', traceback.print_exc())
+            return JsonResponse(result)
+
+    def get(self, request):
+        # TO DO 返回视频
+        try:
+            url = request.GET.get('video_url')
             url = os.path.join(PROJECT_ROOT, url)
             return FileResponse(open(url, 'rb'))
         except Exception as e:
