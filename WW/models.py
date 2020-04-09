@@ -99,11 +99,17 @@ class Message(models.Model):
 
 
 class Comment(models.Model):
+    comment_type = {
+        ('child', 'Child'),
+        ('parent', 'Parent')
+    }
     id = models.AutoField("评论唯一标识符", primary_key=True)
     msg = models.ForeignKey(Message, on_delete=models.CASCADE,
                             verbose_name="该评论所属信息", default='')
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                verbose_name="该评论所属用户", related_name='comment_set', default='')
+    #当该评论为父评论时，设为parent，为子评论时，设为child
+    type = models.CharField("类型", choices = comment_type, default = 'parent', max_length = 31)
     #当该评论为子评论时，则使用reply_to参数，其为该评论所回复的用户
     #当该评论非子评论时，则该参数为空
     reply_to = models.ForeignKey(
