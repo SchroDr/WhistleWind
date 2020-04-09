@@ -307,23 +307,45 @@ class MessagesView(View):
             author_id = request_data['user_id']
             pos_x = request_data['position']['pos_x']
             pos_y = request_data['position']['pos_y']
-            title = request_data['title']
             content = request_data['content']
-            images = request_data['images']
+            
             author = models.User.objects.filter(id=author_id)[0]
             message = models.Message.objects.create(
                 pos_x=pos_x,
                 pos_y=pos_y,
-                title=title,
                 content=content,
                 author=author
             )
+
+            if 'title' in request_data.keys():
+                title = request_data['title']
+                message.title = title
+            if 'images' in request_data.keys():
+                images = request_data['images']
+                for image in images:
+                    messageImage = models.MessageImage.objects.create(
+                        message=message, img=image['image_url']
+                    )
+                    messageImage.save()
+            if 'mentioned' in request_data.keys():
+                mentions = request_data['mentioned']
+                for mention in mentions:
+                    mentioned_user = models.User.objects.filter(id = mention)[0]
+                    message.mention.add(mentioned_user)
+            if 'tags' in request_data.keys():
+                tags = request_data['tags']
+                for tag_content in tags:
+                    tag = models.Tag.objects.get(tag=tag_content)
+                    if tag is not None:
+                        message.tag.add(tag)
+                    else:
+                        tag = models.Tag.objects.create(tag=tag_content)
+                        tag.save()
+                        message.tag.add(tag)
+            if 'device' in request_data.keys():
+                device = request_data['device']
+                message.device = device
             message.save()
-            for image in images:
-                messageImage = models.MessageImage.objects.create(
-                    message=message, img=image['image_url']
-                )
-                messageImage.save()
             result['state']['msg'] = 'successful'
             result['data']['msg_id'] = message.id
             return JsonResponse(result)

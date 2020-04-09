@@ -72,7 +72,7 @@ class Message(models.Model):
     id = models.AutoField("信息唯一标识符", primary_key=True)
     pos_x = models.FloatField("信息位置经度", default=0)
     pos_y = models.FloatField("信息位置纬度", default=0)
-    title = models.CharField("信息标题", max_length=62)
+    title = models.CharField("信息标题", max_length=62, null=True)
     content = models.TextField("信息内容")
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                verbose_name="该信息作者", related_name='message_set')
