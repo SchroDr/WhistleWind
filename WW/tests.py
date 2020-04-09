@@ -977,7 +977,7 @@ class CommentsModelTests(TestCase):
         parent_comment.deleted = 1
         user.save()
         message.save()
-        parent_comment.deleted.save()
+        parent_comment.save()
         response = self.c.post(
             '/ww/comments/', data=request_data, content_type='application/json')
         self.assertEqual(response.status_code, 200)

@@ -622,7 +622,7 @@ class CommentsView(View):
                             "username": i.username,
                             "avatar": i.avatar,
                         }
-                        result['who_like'].append(oneLike)
+                        result['data']['who_like'].append(oneLike)
                     result['state']['msg'] = 'successful'
                 else:
                     result['state']['msg'] = 'deleted'
@@ -673,44 +673,43 @@ class CommentsView(View):
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
-    def commentsChildComments(self, request):
-        # TO DO 接收子评论
-        result = {
-            "state": {
-                "msg": "failed",
-                "description": ""
-            },
-            "data": {
-                "comment_id": 0
-            }
+def commentsChildComments(self, request):
+    # TO DO 接收子评论
+    result = {
+        "state": {
+            "msg": "failed",
+            "description": ""
+        },
+        "data": {
+            "comment_id": 0
         }
-        comment = demjson.decode(request.body)
-    #       "user_id": "",
-    #   "reply_to": "",
-    #   "content": "",
-    #   "parent_comment_id": "",
-    #   "msg_id": ""
-        try:
-            user = models.User.objects.filter(id=comment['user_id'])[0]
-            mess = models.Message.objects.filter(id=comment['msg_id'])[0]
-            comm = models.Comment.objects.create(
-                msg=mess,
-                content=comment['content'],
-                author=user,
-                type="child",
-                reply_to=comment['reply_to'],
-                parent_comment=comment['parent_comment_id']
-            )
-            comm.save()
-            result['state']['msg'] = 'successful'
-            result['data']['comment_id'] = comm.id
-        except Exception as e:
-            result['state']['msg'] = 'failed'
-            result['state']['description'] = str(repr(e))
-            result.pop('data')
-            print('\nrepr(e):\t', repr(e))
-            print('traceback.print_exc():', traceback.print_exc())
-        pass
+    }
+    comment = demjson.decode(request.body)
+#       "user_id": "",
+#   "reply_to": "",
+#   "content": "",
+#   "parent_comment_id": "",
+#   "msg_id": ""
+    try:
+        user = models.User.objects.filter(id=comment['user_id'])[0]
+        mess = models.Message.objects.filter(id=comment['msg_id'])[0]
+        comm = models.Comment.objects.create(
+            msg=mess,
+            content=comment['content'],
+            author=user,
+            type="child",
+            reply_to=comment['reply_to'],
+            parent_comment=comment['parent_comment_id']
+        )
+        comm.save()
+        result['state']['msg'] = 'successful'
+        result['data']['comment_id'] = comm.id
+    except Exception as e:
+        result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
+        result.pop('data')
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
 # jhc-----------------------------------
 
 
