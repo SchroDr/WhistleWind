@@ -968,9 +968,7 @@ class MessagesModelTests(TestCase):
         self.assertLessEqual(len(response.json()['data']['messages']), 18)
 
     def test_give_a_like_to_a_message_works_successfully(self):
-        """
-        测试能否正确点赞
-        """
+        """ 测试能否正确点赞"""
         message = models.Message.objects.filter()[0]
         users_liked = message.who_like.all()
         users = models.User.objects.all()
@@ -989,10 +987,8 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_like.all())
 
-    def test_give_a_like_to_a_message_works_unsuccessfully(self):
-        """
-        测试能否正确点赞
-        """
+    def test_give_two_likes_to_a_message(self):
+        """点多次赞的情况"""
         message = models.Message.objects.filter()[0]
         users_liked = message.who_like.all()
         users = models.User.objects.all()
@@ -1014,9 +1010,7 @@ class MessagesModelTests(TestCase):
         self.assertIn(user, message.who_like.all())
 
     def test_give_a_dislike_to_a_message_works_successfully(self):
-        """
-        测试能否正确点踩
-        """
+        """测试能否正确点踩"""
         message = models.Message.objects.filter()[0]
         users_disliked = message.who_dislike.all()
         users = models.User.objects.all()
@@ -1035,10 +1029,8 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_dislike.all())
 
-    def test_give_a_dislike_to_a_message_works_successfully(self):
-        """
-        测试能否正确点踩
-        """
+    def test_give_two_dislikes_to_a_message(self):
+        """点多次踩的情况"""
         message = models.Message.objects.filter()[0]
         users_disliked = message.who_dislike.all()
         users = models.User.objects.all()
@@ -1418,7 +1410,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response.json()['data']['like'], comment.like)
         self.assertIn(user, comment.who_like.all())
 
-    def test_give_a_like_to_a_comment_works_unsuccessfully(self):
+    def test_give_two_likes_to_a_comment(self):
         """多次点赞的情况"""
         comment = models.Comment.objects.filter()[0]
         users_liked = comment.who_like.all()
