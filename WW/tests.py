@@ -1510,6 +1510,39 @@ class ImagesModelTests(TestCase):
         self.assertEqual(response['Content-Type'], 'image/jpeg')
 
 
+class VideosModelTests(TestCase):
+    """用于测试Videos模块"""
+
+    c = Client()
+
+    def setUp(self):
+        createTestDatabase()
+
+    def test_post_videos_works_successfully(self):
+        """用于测试发送视频是否正常工作"""
+        request_data = {
+            "video": '',
+        }
+        with open('media/video/test.mp4', 'rb') as f:
+            request_data['video'] = f
+            response = self.c.post(
+                '/ww/videos/', data=request_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+
+    def test_get_images_works_successfully(self):
+        """
+        用于测试获取图片是否工作正常
+        """
+        request_data = {
+            'video_url': 'media/video/test.mp4'
+        }
+        response = self.c.get(
+            '/ww/videos/', data=request_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'video/mp4')
+
+
 class OtherModelTests(TestCase):
     """
     用于测试零散功能

@@ -787,7 +787,7 @@ class VideosView(View):
         try:
             video_file = request.FILES.get("video")
             video = models.Video.objects.create(
-                img=video_file
+                video=video_file
             )
             video.save()
             result['data']['video_url'] = video.video.url
