@@ -384,8 +384,12 @@ class MessagesView(View):
                 "comments": [
                 ],
                 "images": [
-
-                ]
+                ],
+                "tags": [
+                ],
+                "mentioned": [
+                ],
+                "device": ""
             },
             "state": {
                 "msg": "",
@@ -408,6 +412,7 @@ class MessagesView(View):
             result['data']['author']['avatar'] = author.avatar
             result['data']['like'] = message.like
             result['data']['dislike'] = message.dislike
+            result['data']['device'] = message.device
             for i, user in enumerate(message.who_like.all()):
                 user_info = {
                     "user_id": user.id,
@@ -449,6 +454,17 @@ class MessagesView(View):
                     'image_url': image.img
                 }
                 result['data']['images'].append(message_info)
+            for tag in message.tag:
+                tag_info = {
+                    'tag': tag.tag
+                }
+                result['data']['tags'].append(tag_info)
+            for mention in message.mention:
+                mention_info = {
+                    'user_id': mention.id
+                }
+                result['data']['mentioned'].append(mention_info)
+            
             result['state']['msg'] = 'successful'
             return JsonResponse(result)
         except Exception as e:
@@ -486,6 +502,26 @@ class MessagesView(View):
                         message=message
                     )
                     message_image.save()
+            if 'mentioned' in request_data.keys():
+                message.mention.all().delete()
+                mentions = request_data['mentioned']
+                for mention in mentions:
+                    mentioned_user = models.User.objects.filter(id = mention)[0]
+                    message.mention.add(mentioned_user)
+            if 'tags' in request_data.keys():
+                message.tag.all().delete()
+                tags = request_data['tags']
+                for tag_content in tags:
+                    tag = models.Tag.objects.get(tag=tag_content)
+                    if tag is not None:
+                        message.tag.add(tag)
+                    else:
+                        tag = models.Tag.objects.create(tag=tag_content)
+                        tag.save()
+                        message.tag.add(tag)
+            if 'device' in request_data.keys():
+                device = request_data['device']
+                message.device = device
             message.save()
             result['state']['msg'] = 'successful'
             result['data']['msg_id'] = message.id
