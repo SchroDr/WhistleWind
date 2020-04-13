@@ -55,7 +55,7 @@ def createTestDatabase():
                 message.mention.add(mention_user)
             message.save()
     messages = models.Message.objects.all()
-    # 为每条信息增加10条评论，3张图片，5个点赞，5个点踩
+    # 为每条信息增加10条评论，3张图片，5个点赞，5个点踩, 3个@
     for message in messages:
         for i in range(5):
             user = random.choice(users)
@@ -77,6 +77,10 @@ def createTestDatabase():
         for user in random.sample(list(users), 5):
             message.dislike += 1
             message.who_dislike.add(user)
+            message.save()
+        for user in random.sample(list(users), 3):
+            message.dislike += 1
+            message.mention.add(user)
             message.save()
     comments = models.Comment.objects.all()
     # 为每条评论增加5个点赞，2个子评论
@@ -534,7 +538,8 @@ class MessagesModelTests(TestCase):
 
     def test_post_messages_works_successfully(self):
         """正常发送信息"""
-        user = models.User.objects.all()[0]
+        users = models.User.objects.all()
+        user = users[0]
         request_data = {
             "user_id": user.id,
             "title": "rua",
@@ -545,10 +550,10 @@ class MessagesModelTests(TestCase):
             },
             "mentioned": [
                 {
-                    "user_id": 2
+                    "user_id": users[1].id
                 },
                 {
-                    "user_id": 3
+                    "user_id": users[2].id
                 }
             ],
             "images": [
@@ -586,6 +591,8 @@ class MessagesModelTests(TestCase):
 
     def test_post_messages_works_with_non_existent_id(self):
         """使用错误的id发送信息"""
+        users = models.User.objects.all()
+        user = users[0]
         request_data = {
             "user_id": 99999,
             "title": "rua",
@@ -596,10 +603,10 @@ class MessagesModelTests(TestCase):
             },
             "mentioned": [
                 {
-                    "user_id": 2
+                    "user_id": users[1].id
                 },
                 {
-                    "user_id": 3
+                    "user_id": users[2].id
                 }
             ],
             "images": [
@@ -630,7 +637,8 @@ class MessagesModelTests(TestCase):
 
     def test_post_messages_works_with_deleted_id(self):
         """使用已删除的id发送信息"""
-        user = models.User.objects.all()[0]
+        users = models.User.objects.all()
+        user = users[0]
         request_data = {
             "user_id": user.id,
             "title": "rua",
@@ -641,10 +649,10 @@ class MessagesModelTests(TestCase):
             },
             "mentioned": [
                 {
-                    "user_id": 2
+                    "user_id": users[1].id
                 },
                 {
-                    "user_id": 3
+                    "user_id": users[2].id
                 }
             ],
             "images": [
@@ -697,9 +705,9 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['content'], message.content)
         self.assertEqual(response.json()['data']
-                         ['position']['pos_x'], str(message.pos_x))
+                         ['position']['pos_x'], message.pos_x)
         self.assertEqual(response.json()['data']
-                         ['position']['pos_y'], str(message.pos_y))
+                         ['position']['pos_y'], message.pos_y)
         self.assertEqual(response.json()['data']
                          ['author']['author_id'], message.author.id)
         self.assertEqual(response.json()['data']
@@ -707,7 +715,7 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']
                          ['author']['avatar'], message.author.avatar)
         self.assertEqual(response.json()['data']
-                         ['like'], str(message.like))
+                         ['like'], message.like)
         user_like = models.User.objects.filter(
             id=response.json()['data']['who_like'][0]['user_id']
         )[0]
@@ -725,14 +733,14 @@ class MessagesModelTests(TestCase):
             response.json()['data']['mod_date'], message.mod_date.astimezone(
                         timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
-        comment = models.User.objects.filter(
+        comment = models.Comment.objects.filter(
             id=response.json()['data']['comments'][0]['comment_id']
         )[0]
         self.assertEqual(
             response.json()['data']['comments'][0]['content'], comment.content
         )
         self.assertEqual(
-            response.json()['data']['comments'][0]['like'], str(comment.like)
+            response.json()['data']['comments'][0]['like'], comment.like
         )
         comment_author = models.User.objects.filter(
             id=response.json()['data']['comments'][0]['author']['author_id']
@@ -741,7 +749,7 @@ class MessagesModelTests(TestCase):
             response.json()['data']['comments'][0]['author']['username'], comment_author.username
         )
         self.assertEqual(
-            response.json()['data']['comments'][0]['author']['username'], comment_author.avatar
+            response.json()['data']['comments'][0]['author']['avatar'], comment_author.avatar
         )
         self.assertEqual(
             len(response.json()['data']['images']), message.messageimage_set.count()
@@ -774,7 +782,7 @@ class MessagesModelTests(TestCase):
         """使用已删除id的情况"""
         message = models.Message.objects.all()[0]
         request_data = {
-            "msg_id": 99999,
+            "msg_id": message.id,
             "who_like_limit": 10,
             "who_dislike_limit": 10
         }
@@ -790,13 +798,15 @@ class MessagesModelTests(TestCase):
 
     def test_put_messages_works_successfully(self):
         """用于测试修改信息是否工作正常"""
+        message = models.Message.objects.all()[0]
+        users = models.User.objects.all()
         request_data = {
-            "msg_id": models.Message.objects.all()[0].id,
+            "msg_id": message.id,
             "title": "NewTitle",
             "content": "NewContent",
             "mentioned": [
                 {
-                    "user_id": 2
+                    "user_id": users[1].id
                 }
             ],
             "images": [
@@ -860,8 +870,6 @@ class MessagesModelTests(TestCase):
         }
         response = self.c.put(
             '/ww/messages/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(
-            id=response.json()['data']['msg_id'])[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'wrong')
 
@@ -899,8 +907,6 @@ class MessagesModelTests(TestCase):
         message.save()
         response = self.c.put(
             '/ww/messages/', data=request_data, content_type='application/json')
-        message = models.Message.objects.filter(
-            id=response.json()['data']['msg_id'])[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'deleted')
         message.deleted = 0
@@ -916,7 +922,7 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json')
         message = models.Message.objects.filter(
             id=request_data['msg_id']
-        )
+        )[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'successful')
         self.assertEqual(response.json()['data']
@@ -938,16 +944,21 @@ class MessagesModelTests(TestCase):
 
     def test_delete_messages_works_with_deleted_id(self):
         """使用已删除id的情况"""
+        message = models.Message.objects.all()[0]
         request_data = {
-            "msg_id": 99999
+            "msg_id": message.id
         }
+        message.deleted = 1
+        message.save()
         response = self.c.delete(
             '/ww/messages/', data=request_data, content_type='application/json')
         message = models.Message.objects.filter(
             id=request_data['msg_id']
-        )
+        )[0]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['state']['msg'], 'deleted')
+        message.deleted = 0
+        message.save()
 
 
     def test_get_a_set_messages_works_successfully(self):
@@ -1051,21 +1062,21 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response.json()['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_dislike.all())
 
-    # def test_get_all_mentioned_messages_works_successfully(self):
-    #     """
-    #     TO DO 测试能否正确获取被@的信息
-    #     """
-    #     user = models.User.objects.filter()[0]
-    #     request_data = {
-    #         "user_id": user.id,
-    #         "time_limit": -1,
-    #         "count_limit": -1
-    #     }
-    #     response = self.c.get(
-    #         '/ww/messages/mentioned', data=request_data, content_type='application/json')
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json()['state']['msg'], 'successful')
-    #     self.assertEqual(len(response.json()['data']['messages'], len(user.message_set.all())))
+    def test_get_all_mentioned_messages_works_successfully(self):
+        """测试能否正确获取被@的信息"""
+        user = models.User.objects.filter()[0]
+        request_data = {
+            "user_id": user.id,
+            "time_limit": -1,
+            "count_limit": -1
+        }
+        response = self.c.get(
+            '/ww/messages/mentioned/', data=request_data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['state']['msg'], 'successful')
+        self.assertEqual(
+            len(response.json()['data']['messages']), len(user.message_mention_user.filter())
+            )
 
 
 class CommentsModelTests(TestCase):

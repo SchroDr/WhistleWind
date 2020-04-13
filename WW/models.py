@@ -88,6 +88,7 @@ class Message(models.Model):
     mention = models.ManyToManyField(
         User, verbose_name="被该信息@的用户", related_name='message_mention_user', blank=True
     )
+    device = models.TextField("设备信息", blank=True)
     add_date = models.DateTimeField("发布日期", default=timezone.now)
     mod_date = models.DateTimeField("最后修改日期", auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)

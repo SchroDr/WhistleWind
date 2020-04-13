@@ -287,12 +287,10 @@ class UsersView(View):
 
 
 class MessagesView(View):
-    """
-    本模块用于对消息进行增删改查
-    """
+    """本模块用于对消息进行增删改查"""
 
     def post(self, request):
-        # TO DO 发送消息
+        """接收发送的消息"""
         result = {
             "state": {
                 "msg": "successful",
@@ -309,46 +307,61 @@ class MessagesView(View):
             pos_y = request_data['position']['pos_y']
             content = request_data['content']
             
-            author = models.User.objects.filter(id=author_id)[0]
-            message = models.Message.objects.create(
-                pos_x=pos_x,
-                pos_y=pos_y,
-                content=content,
-                author=author
-            )
+            authors = models.User.objects.filter(id=author_id)
+            #如果查询用户不存在
+            if not authors.exists():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'The user does not exist'
+                result.pop('data')
+                return JsonResponse(result)
+            #如果查询用户已被删除
+            elif authors[0].deleted == 1:
+                result['state']['msg'] = 'deleted'
+                result['state']['description'] = 'The user has been deleted'
+                result.pop('data')
+                return JsonResponse(result)
+            else:
+                author = models.User.objects.filter(id=author_id)[0]
+                message = models.Message.objects.create(
+                    pos_x=pos_x,
+                    pos_y=pos_y,
+                    content=content,
+                    author=author
+                )
 
-            if 'title' in request_data.keys():
-                title = request_data['title']
-                message.title = title
-            if 'images' in request_data.keys():
-                images = request_data['images']
-                for image in images:
-                    messageImage = models.MessageImage.objects.create(
-                        message=message, img=image['image_url']
-                    )
-                    messageImage.save()
-            if 'mentioned' in request_data.keys():
-                mentions = request_data['mentioned']
-                for mention in mentions:
-                    mentioned_user = models.User.objects.filter(id = mention)[0]
-                    message.mention.add(mentioned_user)
-            if 'tags' in request_data.keys():
-                tags = request_data['tags']
-                for tag_content in tags:
-                    tag = models.Tag.objects.get(tag=tag_content)
-                    if tag is not None:
-                        message.tag.add(tag)
-                    else:
-                        tag = models.Tag.objects.create(tag=tag_content)
-                        tag.save()
-                        message.tag.add(tag)
-            if 'device' in request_data.keys():
-                device = request_data['device']
-                message.device = device
-            message.save()
-            result['state']['msg'] = 'successful'
-            result['data']['msg_id'] = message.id
-            return JsonResponse(result)
+                if 'title' in request_data.keys():
+                    title = request_data['title']
+                    message.title = title
+                if 'images' in request_data.keys():
+                    images = request_data['images']
+                    for image in images:
+                        messageImage = models.MessageImage.objects.create(
+                            message=message, img=image['image_url']
+                        )
+                        messageImage.save()
+                if 'mentioned' in request_data.keys():
+                    mentions = request_data['mentioned']
+                    for mention in mentions:
+                        mentioned_user = models.User.objects.filter(id = mention['user_id'])[0]
+                        message.mention.add(mentioned_user)
+                if 'tags' in request_data.keys():
+                    tags = request_data['tags']
+                    for tag_content in tags:
+                        tag = models.Tag.objects.filter(tag=tag_content)
+                        if tag.exists():
+                            tag = tag[0]
+                            message.tag.add(tag)
+                        else:
+                            tag = models.Tag.objects.create(tag=tag_content)
+                            tag.save()
+                            message.tag.add(tag)
+                if 'device' in request_data.keys():
+                    device = request_data['device']
+                    message.device = device
+                message.save()
+                result['state']['msg'] = 'successful'
+                result['data']['msg_id'] = message.id
+                return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -400,73 +413,87 @@ class MessagesView(View):
             # request_data = demjson.decode(request.body)
             request_data = request.GET.dict()
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id=msg_id)[0]
-            author = message.author
-            result['data']['msg_id'] = message.id
-            result['data']['position']['pos_x'] = message.pos_x
-            result['data']['position']['pos_y'] = message.pos_y
-            result['data']['title'] = message.title
-            result['data']['content'] = message.content
-            result['data']['author']['author_id'] = author.id
-            result['data']['author']['username'] = author.username
-            result['data']['author']['avatar'] = author.avatar
-            result['data']['like'] = message.like
-            result['data']['dislike'] = message.dislike
-            result['data']['device'] = message.device
-            for i, user in enumerate(message.who_like.all()):
-                user_info = {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "avatar": user.avatar
-                }
-                result['data']['who_like'].append(user_info)
-                if i >= 9:
-                    break
-            for i, user in enumerate(message.who_dislike.all()):
-                user_info = {
-                    "user_id": user.id,
-                    "username": user.username,
-                    "avatar": user.avatar
-                }
-                result['data']['who_dislike'].append(user_info)
-                if i >= 9:
-                    break
-            result['add_data'] = message.add_date.astimezone(
-                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-            result['mod_date'] = message.mod_date.astimezone(
-                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-            for i, comment in enumerate(message.comment_set.all()):
-                comment_info = {
-                    "comment_id": comment.id,
-                    "content": comment.content,
-                    'like': comment.like,
-                    'author': {
-                        'author_id': comment.author.id,
-                        'username': comment.author.username,
-                        'avatar': comment.author.avatar
+            messages = models.Message.objects.filter(id=msg_id)
+            #如果查询信息不存在
+            if not messages.exists():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'The message does not exist'
+                result.pop('data')
+                return JsonResponse(result)
+            #如果查询信息已被删除
+            elif messages[0].deleted == 1:
+                result['state']['msg'] = 'deleted'
+                result['state']['description'] = 'The message has been deleted'
+                result.pop('data')
+                return JsonResponse(result)
+            else:
+                message = messages[0]
+                author = message.author
+                result['data']['msg_id'] = message.id
+                result['data']['position']['pos_x'] = message.pos_x
+                result['data']['position']['pos_y'] = message.pos_y
+                result['data']['title'] = message.title
+                result['data']['content'] = message.content
+                result['data']['author']['author_id'] = author.id
+                result['data']['author']['username'] = author.username
+                result['data']['author']['avatar'] = author.avatar
+                result['data']['like'] = message.like
+                result['data']['dislike'] = message.dislike
+                result['data']['device'] = message.device
+                for i, user in enumerate(message.who_like.all()):
+                    user_info = {
+                        "user_id": user.id,
+                        "username": user.username,
+                        "avatar": user.avatar
                     }
-                }
-                result['data']['comments'].append(comment_info)
-                if i >= 9:
-                    break
-            for i, image in enumerate(message.messageimage_set.all()):
-                message_info = {
-                    'image_url': image.img
-                }
-                result['data']['images'].append(message_info)
-            for tag in message.tag:
-                tag_info = {
-                    'tag': tag.tag
-                }
-                result['data']['tags'].append(tag_info)
-            for mention in message.mention:
-                mention_info = {
-                    'user_id': mention.id
-                }
-                result['data']['mentioned'].append(mention_info)
-            
-            result['state']['msg'] = 'successful'
-            return JsonResponse(result)
+                    result['data']['who_like'].append(user_info)
+                    if i >= 9:
+                        break
+                for i, user in enumerate(message.who_dislike.all()):
+                    user_info = {
+                        "user_id": user.id,
+                        "username": user.username,
+                        "avatar": user.avatar
+                    }
+                    result['data']['who_dislike'].append(user_info)
+                    if i >= 9:
+                        break
+                result['data']['add_date'] = message.add_date.astimezone(
+                    timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                result['data']['mod_date'] = message.mod_date.astimezone(
+                    timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                for i, comment in enumerate(message.comment_set.all()):
+                    comment_info = {
+                        "comment_id": comment.id,
+                        "content": comment.content,
+                        'like': comment.like,
+                        'author': {
+                            'author_id': comment.author.id,
+                            'username': comment.author.username,
+                            'avatar': comment.author.avatar
+                        }
+                    }
+                    result['data']['comments'].append(comment_info)
+                    if i >= 9:
+                        break
+                for i, image in enumerate(message.messageimage_set.all()):
+                    message_info = {
+                        'image_url': image.img
+                    }
+                    result['data']['images'].append(message_info)
+                for tag in message.tag.all():
+                    tag_info = {
+                        'tag': tag.tag
+                    }
+                    result['data']['tags'].append(tag_info)
+                for mention in message.mention.all():
+                    mention_info = {
+                        'user_id': mention.id
+                    }
+                    result['data']['mentioned'].append(mention_info)
+                
+                result['state']['msg'] = 'successful'
+                return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -489,43 +516,58 @@ class MessagesView(View):
         try:
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id=msg_id)[0]
-            if 'title' in request_data.keys():
-                message.title = request_data['title']
-            if 'content' in request_data.keys():
-                message.content = request_data['content']
-            if 'images' in request_data.keys():
-                message.messageimage_set.all().delete()
-                for image in request_data['images']:
-                    message_image = models.MessageImage.objects.create(
-                        img=image['image_url'],
-                        message=message
-                    )
-                    message_image.save()
-            if 'mentioned' in request_data.keys():
-                message.mention.all().delete()
-                mentions = request_data['mentioned']
-                for mention in mentions:
-                    mentioned_user = models.User.objects.filter(id = mention)[0]
-                    message.mention.add(mentioned_user)
-            if 'tags' in request_data.keys():
-                message.tag.all().delete()
-                tags = request_data['tags']
-                for tag_content in tags:
-                    tag = models.Tag.objects.get(tag=tag_content)
-                    if tag is not None:
-                        message.tag.add(tag)
-                    else:
-                        tag = models.Tag.objects.create(tag=tag_content)
-                        tag.save()
-                        message.tag.add(tag)
-            if 'device' in request_data.keys():
-                device = request_data['device']
-                message.device = device
-            message.save()
-            result['state']['msg'] = 'successful'
-            result['data']['msg_id'] = message.id
-            return JsonResponse(result)
+            messages = models.Message.objects.filter(id=msg_id)
+            #如果查询信息不存在
+            if not messages.exists():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'The message does not exist'
+                result.pop('data')
+                return JsonResponse(result)
+            #如果查询信息已被删除
+            elif messages[0].deleted == 1:
+                result['state']['msg'] = 'deleted'
+                result['state']['description'] = 'The message has been deleted'
+                result.pop('data')
+                return JsonResponse(result)
+            else:
+                message = messages[0]
+                if 'title' in request_data.keys():
+                    message.title = request_data['title']
+                if 'content' in request_data.keys():
+                    message.content = request_data['content']
+                if 'images' in request_data.keys():
+                    message.messageimage_set.all().delete()
+                    for image in request_data['images']:
+                        message_image = models.MessageImage.objects.create(
+                            img=image['image_url'],
+                            message=message
+                        )
+                        message_image.save()
+                if 'mentioned' in request_data.keys():
+                    message.mention.remove(*message.mention.all())
+                    mentions = request_data['mentioned']
+                    for mention in mentions:
+                        mentioned_user = models.User.objects.filter(id=mention['user_id'])[0]
+                        message.mention.add(mentioned_user)
+                if 'tags' in request_data.keys():
+                    message.tag.remove(*message.tag.all())
+                    tags = request_data['tags']
+                    for tag_content in tags:
+                        tag = models.Tag.objects.filter(tag=tag_content)
+                        if tag.exists():
+                            tag = tag[0]
+                            message.tag.add(tag)
+                        else:
+                            tag = models.Tag.objects.create(tag=tag_content)
+                            tag.save()
+                            message.tag.add(tag)
+                if 'device' in request_data.keys():
+                    device = request_data['device']
+                    message.device = device
+                message.save()
+                result['state']['msg'] = 'successful'
+                result['data']['msg_id'] = message.id
+                return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -548,11 +590,26 @@ class MessagesView(View):
         try:
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
-            message = models.Message.objects.filter(id=msg_id)[0]
-            message.delete()
-            result['state']['msg'] = 'successful'
-            result['data']['msg_id'] = msg_id
-            return JsonResponse(result)
+            messages = models.Message.objects.filter(id=msg_id)
+            #如果查询信息不存在
+            if not messages.exists():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'The message does not exist'
+                result.pop('data')
+                return JsonResponse(result)
+            #如果查询信息已被删除
+            elif messages[0].deleted == 1:
+                result['state']['msg'] = 'deleted'
+                result['state']['description'] = 'The message has been deleted'
+                result.pop('data')
+                return JsonResponse(result)
+            else:
+                message = messages[0]
+                message.deleted = 1
+                message.save()
+                result['state']['msg'] = 'successful'
+                result['data']['msg_id'] = msg_id
+                return JsonResponse(result)
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -743,11 +800,11 @@ def commentsChildComments(self, request):
         }
     }
     comment = demjson.decode(request.body)
-#       "user_id": "",
-#   "reply_to": "",
-#   "content": "",
-#   "parent_comment_id": "",
-#   "msg_id": ""
+    #       "user_id": "",
+    #   "reply_to": "",
+    #   "content": "",
+    #   "parent_comment_id": "",
+    #   "msg_id": ""
     try:
         user = models.User.objects.filter(id=comment['user_id'])[0]
         mess = models.Message.objects.filter(id=comment['msg_id'])[0]
@@ -1070,20 +1127,47 @@ def messagesLike(request):
         request_data = demjson.decode(request.body)
         msg_id = request_data['msg_id']
         user_id = request_data['user_id']
-        message = models.Message.objects.filter(id=msg_id)[0]
-        user = models.User.objects.filter(id=user_id)[0]
-        if user in message.who_like.all():
+        users = models.User.objects.filter(id=user_id)
+        messages = models.Message.objects.filter(id=msg_id)
+        #如果查询用户不存在
+        if not users.exists():
             result['state']['msg'] = 'wrong'
-            result['state']['description'] = "Liked once"
+            result['state']['description'] = 'The user does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询消息不存在
+        elif not messages.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The message does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询消息已被删除
+        elif messages[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The message has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
         else:
-            message.like += 1
-            message.who_like.add(user)
-            message.save()
-            result['state']['msg'] = 'successful'
-        result['data']['msg_id'] = message.id
-        result['data']['like'] = message.like
-        result['data']['dislike'] = message.dislike
-        return JsonResponse(result)
+            message = messages[0]
+            user = users[0]
+            if user in message.who_like.all():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = "Liked once"
+            else:
+                message.like += 1
+                message.who_like.add(user)
+                message.save()
+                result['state']['msg'] = 'successful'
+            result['data']['msg_id'] = message.id
+            result['data']['like'] = message.like
+            result['data']['dislike'] = message.dislike
+            return JsonResponse(result)
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
@@ -1110,20 +1194,47 @@ def messagesDislike(request):
         request_data = demjson.decode(request.body)
         msg_id = request_data['msg_id']
         user_id = request_data['user_id']
-        message = models.Message.objects.filter(id=msg_id)[0]
-        user = models.User.objects.filter(id=user_id)[0]
-        if user in message.who_dislike.all():
+        users = models.User.objects.filter(id=user_id)
+        messages = models.Message.objects.filter(id=msg_id)
+        #如果查询用户不存在
+        if not users.exists():
             result['state']['msg'] = 'wrong'
-            result['state']['description'] = "Disliked once"
+            result['state']['description'] = 'The user does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询消息不存在
+        elif not messages.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The message does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询消息已被删除
+        elif messages[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The message has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
         else:
-            message.dislike += 1
-            message.who_dislike.add(user)
-            message.save()
-            result['state']['msg'] = 'successful'
-        result['data']['msg_id'] = message.id
-        result['data']['like'] = message.like
-        result['data']['dislike'] = message.dislike
-        return JsonResponse(result)
+            message = messages[0]
+            user = users[0]
+            if user in message.who_dislike.all():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = "Disliked once"
+            else:
+                message.dislike += 1
+                message.who_dislike.add(user)
+                message.save()
+                result['state']['msg'] = 'successful'
+            result['data']['msg_id'] = message.id
+            result['data']['like'] = message.like
+            result['data']['dislike'] = message.dislike
+            return JsonResponse(result)
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
@@ -1134,8 +1245,68 @@ def messagesDislike(request):
 
 
 def messagesMentioned(request):
-    # TO DO 查看被@的信息
-    pass
+    """查看被@的信息"""
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "messages": [
+            ]
+        }
+    }
+    try:
+        request_data = request.GET.dict()
+        user_id = request_data['user_id']
+        time_limit = int(request_data['time_limit'])
+        count_limit = int(request_data['count_limit'])
+        user_id = request_data['user_id']
+        users = models.User.objects.filter(id=user_id)
+        #如果查询用户不存在
+        if not users.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The user does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
+        else:
+            user = users[0]
+            start_time = datetime.now() - timedelta(hours=time_limit)
+            if time_limit == -1 and count_limit == -1:
+                messages = user.message_mention_user.filter().order_by('-add_date')
+            elif time_limit == -1 and count_limit >= 0:
+                messages = user.message_mention_user.filter().order_by('-add_date')[0: count_limit]
+            elif time_limit >= 0 and count_limit == -1:
+                messages = user.message_mention_user.filter(add_date__gt=start_time).order_by('-add_date')
+            else:
+                messages = user.message_mention_user.filter(add_date__gt=start_time).order_by('-add_date')[0: count_limit]
+            for message in messages:
+                message_info = {
+                "msg_id": message.id,
+                "title": message.title,
+                "content": message.content,
+                "author": {
+                    "author_id": message.author.id,
+                    "username": message.author.username,
+                    "avatar": message.author.avatar
+                    }               
+                }
+                result['data']['messages'].append(message_info)
+            result['state']['msg'] = 'successful'
+            return JsonResponse(result)
+    except Exception as e:
+        result.pop('data')
+        result['state']['msg'] = 'failed'
+        result['state']['description'] = str(repr(e))
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
 
 
 def commentsLike(request):
@@ -1152,21 +1323,48 @@ def commentsLike(request):
     }
     try:
         request_data = demjson.decode(request.body)
-        msg_id = request_data['comment_id']
+        comment_id = request_data['comment_id']
         user_id = request_data['user_id']
-        comment = models.Comment.objects.filter(id=msg_id)[0]
-        user = models.User.objects.filter(id=user_id)[0]
-        if user in comment.who_like.all():
+        users = models.User.objects.filter(id=user_id)
+        comments = models.Comment.objects.filter(id=comment_id)
+        #如果查询用户不存在
+        if not users.exists():
             result['state']['msg'] = 'wrong'
-            result['state']['description'] = "Liked once"
+            result['state']['description'] = 'The user does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询评论不存在
+        elif not comments.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The comment does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询评论已被删除
+        elif comments[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The comment has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
         else:
-            comment.like += 1
-            comment.who_like.add(user)
-            comment.save()
-            result['state']['msg'] = 'successful'
-        result['data']['comment_id'] = comment.id
-        result['data']['like'] = comment.like
-        return JsonResponse(result)
+            comment = comments[0]
+            user = users[0]
+            if user in comment.who_like.all():
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = "Liked once"
+            else:
+                comment.like += 1
+                comment.who_like.add(user)
+                comment.save()
+                result['state']['msg'] = 'successful'
+            result['data']['comment_id'] = comment.id
+            result['data']['like'] = comment.like
+            return JsonResponse(result)
     except Exception as e:
         result.pop('data')
         result['state']['msg'] = 'failed'
