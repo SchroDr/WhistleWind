@@ -281,10 +281,6 @@ class UsersView(View):
 # jhc work----------------------------------------------------------------
 
 
-"""
-    Message模块由SchroDr绝赞摸鱼中
-"""
-
 
 class MessagesView(View):
     """本模块用于对消息进行增删改查"""
@@ -339,6 +335,13 @@ class MessagesView(View):
                             message=message, img=image['image_url']
                         )
                         messageImage.save()
+                if 'videos' in request_data.keys():
+                    videos = request_data['videos']
+                    for video in videos:
+                        messageVideo = models.MessageVideo.objects.create(
+                            message=message, video=video['video_url']
+                        )
+                        messageVideo.save()
                 if 'mentioned' in request_data.keys():
                     mentions = request_data['mentioned']
                     for mention in mentions:
@@ -397,6 +400,8 @@ class MessagesView(View):
                 "comments": [
                 ],
                 "images": [
+                ],
+                "videos": [
                 ],
                 "tags": [
                 ],
@@ -477,10 +482,15 @@ class MessagesView(View):
                     if i >= 9:
                         break
                 for i, image in enumerate(message.messageimage_set.all()):
-                    message_info = {
+                    image_info = {
                         'image_url': image.img
                     }
-                    result['data']['images'].append(message_info)
+                    result['data']['images'].append(image_info)
+                for i, video in enumerate(message.messagevideo_set.all()):
+                    video_info = {
+                        'video_url': video.video
+                    }
+                    result['data']['videos'].append(video_info)
                 for tag in message.tag.all():
                     tag_info = {
                         'tag': tag.tag
@@ -543,6 +553,14 @@ class MessagesView(View):
                             message=message
                         )
                         message_image.save()
+                if 'videos' in request_data.keys():
+                    message.messagevideo_set.all().delete()
+                    for video in request_data['videos']:
+                        message_video = models.MessageVideo.objects.create(
+                            video=video['video_url'],
+                            message=message
+                        )
+                        message_video.save()
                 if 'mentioned' in request_data.keys():
                     message.mention.remove(*message.mention.all())
                     mentions = request_data['mentioned']
@@ -828,11 +846,6 @@ def commentsChildComments(self, request):
 # jhc-----------------------------------
 
 
-"""
-Image模块由SchroDr绝赞划水中！
-"""
-
-
 class ImagesView(View):
     """本模块用于上传下载图片"""
 
@@ -1074,7 +1087,6 @@ def messagesSet(request):
         messages = models.Message.objects.filter(
             pos_x__gte=pos_x-width/2, pos_x__lte=pos_x+width/2,
             pos_y__gte=pos_y-height/2, pos_y__lte=pos_y+height/2)
-
         for i, message in enumerate(messages):
             if i >= number:
                 break
@@ -1084,20 +1096,33 @@ def messagesSet(request):
                 "content": message.content,
                 "images": [
                 ],
+                "videos": [
+                ],
                 "author": {
                     "author_id": message.author.id,
                     "username": message.author.username,
                     "avatar": message.author.avatar
                 },
                 "position": {
-                    "pos_x": message.pos_y,
-                    "pos_y": message.pos_x
+                    "pos_x": message.pos_x,
+                    "pos_y": message.pos_y
                 }
             }
-            if len(message.messageimage_set.all()) > 0:
-                message_info['images'].append({
-                    "image_url": message.messageimage_set.all()[0].img
-                })
+            # if len(message.messageimage_set.all()) > 0:
+            #     message_info['images'].append({
+            #         "image_url": message.messageimage_set.all()[0].img
+            #     })
+            # result['data']['messages'].append(message_info)
+            for image in message.messageimage_set.all():
+                image_info = {
+                     "image_url": image.img
+                 }
+                message_info['images'].append(image_info)
+            for video in message.messagevideo_set.all():
+                video_info = {
+                     "video_url": video.video
+                 }
+                message_info['videos'].append(video_info)
             result['data']['messages'].append(message_info)
         result['state']['msg'] = 'successful'
         return JsonResponse(result)

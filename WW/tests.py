@@ -853,7 +853,7 @@ class MessagesModelTests(TestCase):
                     "image_url": "/media/pic/rua.jpg"
                 }
             ],
-            "videoss": [
+            "videos": [
                 {
                     "video_url": "/media/video/test.mp4"
                 },
