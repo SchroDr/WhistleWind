@@ -25,6 +25,11 @@ class Video(models.Model):
     size = models.FloatField("图片大小，单位为Mb", null=True)
 
 
+class Device(models.Model):
+    id = models.AutoField("设备信息唯一标识符", primary_key=True)
+    phone_model = models.CharField("手机型号", max_length=63)
+    imei = models.CharField("IMEI", max_length=31)
+
 class User(models.Model):
     gender_type = {
         ('male', 'Male'),
@@ -42,6 +47,8 @@ class User(models.Model):
         "self", verbose_name="关注用户", through="Followship", symmetrical=False, related_name='follow_set')
     friends = models.ManyToManyField(
         "self", verbose_name="好友", through="Friendship", symmetrical=False, related_name='friend_set')
+    devices = models.ManyToManyField(
+        Device, verbose_name="使用过的设备", through="UserDevice", related_name='device_set')
     introduction = models.TextField("简介", default="Hello, World")
     deleted = models.IntegerField("是否被删除", default=0)
     birth_date = models.DateField("出生日期", default=datetime(1980, 1, 1, 0, 0))
@@ -223,3 +230,12 @@ class Followship(models.Model):
                             verbose_name="粉丝", related_name='fan_set')
     date = models.DateTimeField("开始关注的日期", default=timezone.now)
     deleted = models.IntegerField("是否被删除", default=0)
+
+class UserDevice(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name="用户", related_name="userdevice_user_set"
+    )
+    device = models.ForeignKey(
+        Device, on_delete=models.CASCADE, verbose_name="用户", related_name="userdevice_device_set"
+    )
+
