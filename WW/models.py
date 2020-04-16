@@ -168,6 +168,24 @@ class MessageImage(models.Model):
         # return reverse("Image_detail", kwargs={"pk": self.pk})
         pass
 
+class MessageVideo(models.Model):
+    id = models.AutoField("信息视频唯一标识符", primary_key=True)
+    video = models.CharField("存储视频地址", null=False, max_length=500)
+    message = models.ForeignKey(
+        Message, on_delete=models.CASCADE, verbose_name="该图片所属信息")
+    deleted = models.IntegerField("是否被删除", default=0)
+
+    class Meta:
+        verbose_name = ("MessageVideo")
+        verbose_name_plural = ("MessageVideos")
+
+    def __str__(self):
+        return str(self.id)
+
+    def get_absolute_url(self):
+        # return reverse("Image_detail", kwargs={"pk": self.pk})
+        pass
+
 
 class CommentImage(models.Model):
     id = models.AutoField("评论图片唯一标识符", primary_key=True)
