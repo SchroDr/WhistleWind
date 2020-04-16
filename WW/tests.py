@@ -25,6 +25,10 @@ def createTestDatabase():
     tag_1.save()
     tag_2 = models.Tag.objects.create(tag="Python")
     tag_2.save()
+    device = models.Device.objects.create(
+        phone_model='Blackberry', imei='464313134643139'
+    )
+    device.save()
     # 创建10个用户
     for i in range(10):
         #email = exrex.getone(r"^([A-Za-z0-9_\-\.\u4e00-\u9fa5])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,8})$")
@@ -136,6 +140,7 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertGreaterEqual(response['data']['user_id'], 1)
 
+
     def test_register_works_with_registered_number(self):
         """使用已注册号码注册的情况"""
         user = models.User.objects.filter()[0]
@@ -149,6 +154,7 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'existed')
 
+
     def test_register_works_with_wrong_number(self):
         """使用错误格式的号码注册的情况"""
         request_data = {
@@ -160,6 +166,7 @@ class UsersModelTests(TestCase):
             '/ww/users/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
+
 
     def test_get_basic_user_info(self):
         """测试用户的基本信息是否返回正确"""
@@ -197,6 +204,7 @@ class UsersModelTests(TestCase):
                          ['gender'], user.gender)
         self.assertEqual(response['data']
                          ['registration_date'], user.registration_date.strftime("%Y-%m-%d"))
+
 
     def test_get_basic_user_info_with_wong_id(self):
         """使用错误的id，测试用户的基本信息"""
@@ -258,6 +266,7 @@ class UsersModelTests(TestCase):
             len(response['data']['messages'][0]['images']), message.messageimage_set.count()
         )
 
+
     def test_get_user_info_and_comments_info(self):
         """测试用户已发送的评论是否返回正确"""
         user = models.User.objects.all()[0]
@@ -282,6 +291,7 @@ class UsersModelTests(TestCase):
         self.assertEqual(
             response['data']['comments'][0]['content'], comment.content
         )
+
 
     def test_get_user_info_and_followers_info(self):
         """测试用户的粉丝是否返回正确"""
@@ -311,6 +321,7 @@ class UsersModelTests(TestCase):
             response['data']['followers'][0]['avatar'], follower.avatar
         )
 
+
     def test_get_user_info_and_follows_info(self):
         """测试用户的关注是否返回正确"""
         user = models.User.objects.all()[0]
@@ -339,6 +350,7 @@ class UsersModelTests(TestCase):
             response['data']['follows'][0]['avatar'], follow.avatar
         )
 
+
     def test_get_user_info_and_various_number(self):
         """测试用户的各类数据是否正确"""
         user = models.User.objects.all()[0]
@@ -365,6 +377,7 @@ class UsersModelTests(TestCase):
             response['data']['messages_number'], user.message_set.count())
         self.assertEqual(
             response['data']['comments_number'], user.comment_set.count())
+
 
     def test_get_all_user_info_works_successfully(self):
         """获取所有用户的所有信息的情况，测试能否正确返回应有的数量"""
@@ -394,7 +407,6 @@ class UsersModelTests(TestCase):
             len(response['data']['comments']), user.comment_set.count())
         
 
-
     def test_get_part_user_messages_works_successfully(self):
         """获取用户的部分信息的情况，测试能否正确返回应有的数量"""
         user = models.User.objects.all()[0]
@@ -420,6 +432,7 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response['data']['followers']), 3)
         self.assertEqual(len(response['data']['messages']), 3)
         self.assertEqual(len(response['data']['comments']), 3)
+
 
     def test_get_minimal_user_messages_works_successfully(self):
         """获取用户的最少信息的情况，测试能否正确返回应有的数量"""
@@ -479,6 +492,7 @@ class UsersModelTests(TestCase):
         self.assertEqual(user.gender, request_data['gender'])
         self.assertEqual(user.birth_date.strftime("%Y-%m-%d"), request_data['birth_date'])
 
+
     def test_update_user_messages_works_with_wrong_id(self):
         """使用错误的id，更新用户信息的情况"""
         user = models.User.objects.all()[0]
@@ -502,6 +516,7 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
     
+
     def test_update_user_messages_works_successfully_with_part_params(self):
         """使用部分参数，正常更新用户信息的情况"""
         user = models.User.objects.all()[0]
@@ -529,6 +544,35 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertEqual(response['data']
                          ['user_id'], request_data['user_id'])
+
+
+    def test_post_device_works_successfully(self):
+        """正常发送的情况"""
+        user = models.User.objects.all()[0]
+        request_data = {
+            "phone_model": "NOKIA",
+            "imei": "464313134643131",
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/users/devices/', data=request_data, content_type='application/json').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'successful')
+
+    def test_post_device_works_successfully_with_existent_device(self):
+        """正常发送的情况"""
+        user = models.User.objects.all()[0]
+        device = models.Device.objects.all()[0]
+        request_data = {
+            "phone_model": device.phone_model,
+            "imei": device.imei,
+            "user_id": user.id
+        }
+        response = self.c.post(
+            '/ww/users/devices/', data=request_data, content_type='application/json').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'successful')
+
 
 
 class MessagesModelTests(TestCase):

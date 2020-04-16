@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     url(r'^users/$', views.UsersView.as_view(), name='users'),
     url(r'^users/login/$', views.login, name='login'),
+    url(r'^users/devices/$', views.usersDeveces, name='devices'),
 
     url(r'^request_vericode/$', views.requestVericode, name='requestVeiricode'),
     url(r'^test_vericode/$', views.testVericode, name='testVeiricode'),

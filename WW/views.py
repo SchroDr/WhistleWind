@@ -1417,3 +1417,53 @@ def staticResources(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
+
+def usersDeveces(request):
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        user_id = request_data['user_id']
+        phone_model = request_data['phone_model']
+        imei = request_data['imei']
+        users = models.User.objects.filter(id=user_id)
+        #如果查询用户不存在
+        if not users.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The user does not exist'
+            result.pop('data')
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            result.pop('data')
+            return JsonResponse(result)
+        devices = models.Device.objects.filter(
+            phone_model=phone_model, imei=imei
+        )
+        if not devices.exists():
+            device = models.Device.objects.create(
+                phone_model=phone_model, imei=imei
+            )
+            device.save()
+        else:
+            device = devices[0]
+        user_device = models.UserDevice.objects.create(
+            device=device,
+            user=users[0]
+        )
+        user_device.save()
+        result['state']['msg'] = 'successful'
+        return JsonResponse(result)
+    except Exception as e:
+        result['state']['description'] = str(repr(e))
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
