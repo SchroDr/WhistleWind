@@ -350,7 +350,7 @@ class MessagesView(View):
                 if 'tags' in request_data.keys():
                     tags = request_data['tags']
                     for tag_content in tags:
-                        tag = tag['tag']
+                        tag_content = tag_content['tag']
                         tag = models.Tag.objects.filter(tag=tag_content)
                         if tag.exists():
                             tag = tag[0]
