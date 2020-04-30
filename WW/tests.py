@@ -116,6 +116,15 @@ def createTestDatabase():
             )
             followship.save()
 
+    version_1 = models.Version.objects.create(
+        version = '1.0'
+    )
+    version_2 = models.Version.objects.create(
+        version = '1.2'
+    )
+    version_1.save()
+    version_2.save()
+
 
 class UsersModelTests(TestCase):
     """
@@ -1223,6 +1232,78 @@ class MessagesModelTests(TestCase):
             )
 
 
+    def test_follow_suessfully(self):
+        """正常关注的情况"""
+        users = models.User.objects.all()
+        user = users[0]
+        followed_user = users[1]
+        request_data = {
+            "user_id": user.id,
+            "followed_user_id": followed_user.id
+        }
+        followships = models.Followship.objects.filter(
+            fan=user, followed_user=followed_user
+        )
+        if followships.exists():
+            followship = followships[0]
+            followship.delete()
+        response = self.c.post(
+            '/ww/users/follow/', data=request_data, content_type='application/json').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'successful')
+
+
+    def test_follow_with_existed_followship(self):
+        """重复关注的情况"""
+        users = models.User.objects.all()
+        user = users[2]
+        followed_user = users[3]
+        request_data = {
+            "user_id": user.id,
+            "followed_user_id": followed_user.id
+        }
+        followships = models.Followship.objects.filter(
+            fan=user, followed_user=followed_user
+        )
+        if followships.exists():
+            followship = followships[0]
+            followship.delete()
+        response = self.c.post(
+            '/ww/users/follow/', data=request_data, content_type='application/json').json()
+        response = self.c.post(
+            '/ww/users/follow/', data=request_data, content_type='application/json').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'existed')
+
+
+    def test_follow_with_deleted_user(self):
+        """用户已被删除的情况"""
+        users = models.User.objects.all()
+        user = users[0]
+        followed_user = users[1]
+        request_data = {
+            "user_id": user.id,
+            "followed_user_id": followed_user.id
+        }
+        followships = models.Followship.objects.filter(
+            fan=user, followed_user=followed_user
+        )
+        if followships.exists():
+            followship = followships[0]
+            followship.delete()
+        user.deleted = 1
+        followed_user.deleted = 1
+        user.save()
+        followed_user.save()
+        response = self.c.post(
+            '/ww/users/follow/', data=request_data, content_type='application/json').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'deleted')
+        user.deleted = 0
+        followed_user.deleted = 0
+        user.save()
+        followed_user.save()
+
 class CommentsModelTests(TestCase):
     """
     用于测试Comments模块
@@ -1709,9 +1790,7 @@ class OtherModelTests(TestCase):
         createTestDatabase()
 
     # def test_request_and_testvericode_works_successfully(self):
-    #     """
-    #     用于测试发送图片是否正常工作
-    #     """
+    #     """用于测试发送图片是否正常工作"""
     #     phone_number = '13521623093'
     #     request_data = {
     #         "phone_number": phone_number
@@ -1731,9 +1810,7 @@ class OtherModelTests(TestCase):
     #     self.assertEqual(response['state']['msg'], 'successful')
 
     def test_login_works_successfully(self):
-        """
-        用于测试登陆功能是否正常工作
-        """
+        """用于测试登陆功能是否正常工作"""
         user = models.User.objects.all()[0]
         request_data = {
             "phone_number": user.phonenumber,
@@ -1746,12 +1823,22 @@ class OtherModelTests(TestCase):
         self.assertEqual(response['data']['user_id'], user.id)
 
     def test_get_static_resources_successfully(self):
-        """
-        测试获取静态资源是否正常工作
-        """
+        """测试获取静态资源是否正常工作"""
         request_data = {
             'resource_url': 'media/documents/隐私政策.html'
         }
         response = self.c.get('/ww/static_resources/', data=request_data).json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/html')
+
+
+    def test_get_latest_version_successfully(self):
+        """测试获取最新版本号是否正常工作"""
+        response = self.c.get('/ww/version/').json()
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['state']['msg'], 'successful')
+        latest_version = models.Version.objects.filter(
+        ).order_by('-date')[0]
+        self.assertEqual(
+            response['data']['latest_version'], latest_version.version
+        )

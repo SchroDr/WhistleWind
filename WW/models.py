@@ -239,3 +239,7 @@ class UserDevice(models.Model):
         Device, on_delete=models.CASCADE, verbose_name="用户", related_name="userdevice_device_set"
     )
 
+class Version(models.Model):
+    id = models.AutoField("版本号唯一标识符", primary_key=True)
+    version = models.CharField("版本号", max_length=62, null=False)
+    date = models.DateTimeField("该版本号发布的日期", default=timezone.now)

@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^users/$', views.UsersView.as_view(), name='users'),
     url(r'^users/login/$', views.login, name='login'),
     url(r'^users/devices/$', views.usersDeveces, name='devices'),
+    url(r'^users/follow/$', views.usersFollow, name='follow'),
 
     url(r'^request_vericode/$', views.requestVericode, name='requestVeiricode'),
     url(r'^test_vericode/$', views.testVericode, name='testVeiricode'),
@@ -22,5 +23,6 @@ urlpatterns = [
 
     url(r'^images/$', views.ImagesView.as_view(), name='images'),
     url(r'^videos/$', views.VideosView.as_view(), name='videos'),
-    url(r'^static_resources/$', views.staticResources, name='staticResources')
+    url(r'^static_resources/$', views.staticResources, name='staticResources'),
+    url(r'^version/$', views.version, name='version')
 ]

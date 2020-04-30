@@ -1468,3 +1468,82 @@ def usersDeveces(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
+
+def usersFollow(request):
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        }
+    }
+    try:
+        request_data = demjson.decode(request.body)
+        user_id = request_data['user_id']
+        followed_user_id = request_data['followed_user_id']
+        users = models.User.objects.filter(id=user_id)
+        followed_users = models.User.objects.filter(id=followed_user_id)
+        #如果查询用户不存在
+        if not users.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The user does not exist'
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            return JsonResponse(result)
+        if not followed_users.exists():
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'The user does not exist'
+            return JsonResponse(result)
+        #如果查询用户已被删除
+        elif followed_users[0].deleted == 1:
+            result['state']['msg'] = 'deleted'
+            result['state']['description'] = 'The user has been deleted'
+            return JsonResponse(result)
+        user = users[0]
+        followed_user = followed_users[0]
+        followships = models.Followship.objects.filter(
+            fan=user, followed_user=followed_user
+        )
+        if not followships.exists():
+            followship = models.Followship.objects.create(
+                fan=user, followed_user=followed_user
+            )
+            followship.save()
+        else:
+            followship = followships[0]
+            result['state']['msg'] = 'existed'
+            return JsonResponse(result)
+        result['state']['msg'] = 'successful'
+        return JsonResponse(result)
+    except Exception as e:
+        result['state']['description'] = str(repr(e))
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
+
+def version(request):
+    result = {
+        "state": {
+            "msg": "",
+            "description": ""
+        },
+        "data": {
+            "latest_version": ""
+        }
+    }
+    try:
+        latest_version = models.Version.objects.filter(
+        ).order_by('-date')[0]
+        result['data']['latest_version'] = latest_version.version
+        result['state']['msg'] = 'successful'
+        return JsonResponse(result)
+    except Exception as e:
+        result['state']['description'] = str(repr(e))
+        result['state']['msg'] = 'failed'
+        print('\nrepr(e):\t', repr(e))
+        print('traceback.print_exc():', traceback.print_exc())
+        return JsonResponse(result)
