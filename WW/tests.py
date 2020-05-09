@@ -99,11 +99,11 @@ def createTestDatabase():
             comment.who_like.add(user)
             comment.save()
             child_comment = models.Comment.objects.create(
-                msg = comment.msg,
-                author = user,
-                type = 'child',
-                reply_to = comment.author,
-                parent_comment = comment
+                msg=comment.msg,
+                author=user,
+                type='child',
+                reply_to=comment.author,
+                parent_comment=comment
             )
             child_comment.save()
 
@@ -117,10 +117,10 @@ def createTestDatabase():
             followship.save()
 
     version_1 = models.Version.objects.create(
-        version = '1.0'
+        version='1.0'
     )
     version_2 = models.Version.objects.create(
-        version = '1.2'
+        version='1.2'
     )
     version_1.save()
     version_2.save()
@@ -149,7 +149,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertGreaterEqual(response['data']['user_id'], 1)
 
-
     def test_register_works_with_registered_number(self):
         """使用已注册号码注册的情况"""
         user = models.User.objects.filter()[0]
@@ -163,7 +162,6 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'existed')
 
-
     def test_register_works_with_wrong_number(self):
         """使用错误格式的号码注册的情况"""
         request_data = {
@@ -175,7 +173,6 @@ class UsersModelTests(TestCase):
             '/ww/users/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_get_basic_user_info(self):
         """测试用户的基本信息是否返回正确"""
@@ -214,7 +211,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['data']
                          ['registration_date'], user.registration_date.strftime("%Y-%m-%d"))
 
-
     def test_get_basic_user_info_with_wong_id(self):
         """使用错误的id，测试用户的基本信息"""
         user = models.User.objects.all()[0]
@@ -233,7 +229,6 @@ class UsersModelTests(TestCase):
                               content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_get_user_info_and_messages_info(self):
         """测试用户已发送的信息是否返回正确"""
@@ -254,7 +249,7 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         message = models.Message.objects.filter(
-            id = response['data']['messages'][0]['message_id']
+            id=response['data']['messages'][0]['message_id']
         )[0]
         self.assertEqual(
             response['data']['messages'][0]['title'], message.title
@@ -272,9 +267,9 @@ class UsersModelTests(TestCase):
             response['data']['messages'][0]['comments_number'], message.comment_set.count()
         )
         self.assertEqual(
-            len(response['data']['messages'][0]['images']), message.messageimage_set.count()
+            len(response['data']['messages'][0]['images']
+                ), message.messageimage_set.count()
         )
-
 
     def test_get_user_info_and_comments_info(self):
         """测试用户已发送的评论是否返回正确"""
@@ -295,12 +290,11 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         comment = models.Comment.objects.filter(
-            id = response['data']['comments'][0]['comment_id']
+            id=response['data']['comments'][0]['comment_id']
         )[0]
         self.assertEqual(
             response['data']['comments'][0]['content'], comment.content
         )
-
 
     def test_get_user_info_and_followers_info(self):
         """测试用户的粉丝是否返回正确"""
@@ -321,7 +315,7 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         follower = models.User.objects.filter(
-            id = response['data']['followers'][0]['user_id']
+            id=response['data']['followers'][0]['user_id']
         )[0]
         self.assertEqual(
             response['data']['followers'][0]['username'], follower.username
@@ -329,7 +323,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(
             response['data']['followers'][0]['avatar'], follower.avatar
         )
-
 
     def test_get_user_info_and_follows_info(self):
         """测试用户的关注是否返回正确"""
@@ -350,7 +343,7 @@ class UsersModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         follow = models.User.objects.filter(
-            id = response['data']['follows'][0]['user_id']
+            id=response['data']['follows'][0]['user_id']
         )[0]
         self.assertEqual(
             response['data']['follows'][0]['username'], follow.username
@@ -358,7 +351,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(
             response['data']['follows'][0]['avatar'], follow.avatar
         )
-
 
     def test_get_user_info_and_various_number(self):
         """测试用户的各类数据是否正确"""
@@ -387,7 +379,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(
             response['data']['comments_number'], user.comment_set.count())
 
-
     def test_get_all_user_info_works_successfully(self):
         """获取所有用户的所有信息的情况，测试能否正确返回应有的数量"""
         user = models.User.objects.all()[0]
@@ -414,7 +405,6 @@ class UsersModelTests(TestCase):
             len(response['data']['messages']), user.message_set.count())
         self.assertEqual(
             len(response['data']['comments']), user.comment_set.count())
-        
 
     def test_get_part_user_messages_works_successfully(self):
         """获取用户的部分信息的情况，测试能否正确返回应有的数量"""
@@ -442,7 +432,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response['data']['messages']), 3)
         self.assertEqual(len(response['data']['comments']), 3)
 
-
     def test_get_minimal_user_messages_works_successfully(self):
         """获取用户的最少信息的情况，测试能否正确返回应有的数量"""
         user = models.User.objects.all()[0]
@@ -467,7 +456,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(len(response['data']['followers']), 0)
         self.assertEqual(len(response['data']['messages']), 0)
         self.assertEqual(len(response['data']['comments']), 0)
-
 
     def test_update_user_messages_works_successfully(self):
         """使用所有参数，正常更新用户信息的情况"""
@@ -499,8 +487,8 @@ class UsersModelTests(TestCase):
         self.assertEqual(user.introduction, request_data['introduction'])
         self.assertEqual(user.avatar, request_data['avatar'])
         self.assertEqual(user.gender, request_data['gender'])
-        self.assertEqual(user.birth_date.strftime("%Y-%m-%d"), request_data['birth_date'])
-
+        self.assertEqual(user.birth_date.strftime(
+            "%Y-%m-%d"), request_data['birth_date'])
 
     def test_update_user_messages_works_with_wrong_id(self):
         """使用错误的id，更新用户信息的情况"""
@@ -524,7 +512,6 @@ class UsersModelTests(TestCase):
             print("WTF")
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-    
 
     def test_update_user_messages_works_successfully_with_part_params(self):
         """使用部分参数，正常更新用户信息的情况"""
@@ -554,7 +541,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['data']
                          ['user_id'], request_data['user_id'])
 
-
     def test_post_device_works_successfully(self):
         """正常发送的情况"""
         user = models.User.objects.all()[0]
@@ -583,7 +569,6 @@ class UsersModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'successful')
 
 
-
 class MessagesModelTests(TestCase):
     """
     用于测试Messages模块
@@ -593,7 +578,6 @@ class MessagesModelTests(TestCase):
 
     def setUp(self):
         createTestDatabase()
-
 
     def test_post_messages_works_successfully(self):
         """正常发送信息"""
@@ -653,9 +637,9 @@ class MessagesModelTests(TestCase):
         self.assertGreaterEqual(response['data']['msg_id'], 1)
         self.assertEqual(len(message.messageimage_set.all()), 3)
         self.assertEqual(message.tag.count(), len(request_data['tags']))
-        self.assertEqual(message.mention.count(), len(request_data['mentioned']))
+        self.assertEqual(message.mention.count(),
+                         len(request_data['mentioned']))
         self.assertEqual(message.device, request_data['device'])
-
 
     def test_post_messages_works_with_non_existent_id(self):
         """使用错误的id发送信息"""
@@ -710,7 +694,6 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_post_messages_works_with_deleted_id(self):
         """使用已删除的id发送信息"""
@@ -770,7 +753,6 @@ class MessagesModelTests(TestCase):
         user.deleted = 0
         user.save()
 
-
     def test_get_messages_works_successfully(self):
         """用于测试获取信息详情是否工作正常"""
         message = models.Message.objects.all()[0]
@@ -812,11 +794,11 @@ class MessagesModelTests(TestCase):
         )
         self.assertEqual(
             response['data']['add_date'], message.add_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         self.assertEqual(
             response['data']['mod_date'], message.mod_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         comment = models.Comment.objects.filter(
             id=response['data']['comments'][0]['comment_id']
@@ -852,7 +834,6 @@ class MessagesModelTests(TestCase):
             response['data']['device'], message.device
         )
 
-
     def test_get_messages_works_with_wrong_id(self):
         """使用错误id的情况"""
         message = models.Message.objects.all()[0]
@@ -865,7 +846,6 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_get_messages_works_with_deleted_id(self):
         """使用已删除id的情况"""
@@ -883,7 +863,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'deleted')
         message.deleted = 0
         message.save()
-
 
     def test_put_messages_works_successfully(self):
         """用于测试修改信息是否工作正常"""
@@ -932,11 +911,12 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertEqual(response['data']
                          ['msg_id'], request_data['msg_id'])
-        self.assertEqual(len(message.messageimage_set.all()), len(request_data['images']))
-        self.assertEqual(len(message.messagevideo_set.all()), len(request_data['videos']))
+        self.assertEqual(len(message.messageimage_set.all()),
+                         len(request_data['images']))
+        self.assertEqual(len(message.messagevideo_set.all()),
+                         len(request_data['videos']))
         self.assertEqual(len(message.tag.all()), len(request_data['tags']))
         self.assertEqual(message.device, request_data['device'])
-
 
     def test_put_messages_works_with_wrong_id(self):
         """使用错误id的情况"""
@@ -979,7 +959,6 @@ class MessagesModelTests(TestCase):
             '/ww/messages/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_put_messages_works_with_deleted_id(self):
         """使用已删除id的情况"""
@@ -1028,7 +1007,6 @@ class MessagesModelTests(TestCase):
         message.deleted = 0
         message.save()
 
-
     def test_delete_messages_works_successfully(self):
         """用于测试删除信息是否工作正常"""
         request_data = {
@@ -1045,7 +1023,6 @@ class MessagesModelTests(TestCase):
                          ['msg_id'], request_data['msg_id'])
         self.assertEqual(message.deleted, 1)
 
-
     def test_delete_messages_works_with_wrong_id(self):
         """使用错误id的情况"""
         request_data = {
@@ -1058,7 +1035,6 @@ class MessagesModelTests(TestCase):
         )
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-
 
     def test_delete_messages_works_with_deleted_id(self):
         """使用已删除id的情况"""
@@ -1078,7 +1054,6 @@ class MessagesModelTests(TestCase):
         message.deleted = 0
         message.save()
 
-
     def test_get_a_set_messages_works_successfully(self):
         """测试能否正确获取一组信息"""
         user = models.User.objects.filter()[0]
@@ -1097,7 +1072,7 @@ class MessagesModelTests(TestCase):
         self.assertLessEqual(len(response['data']['messages']), 18)
         message = models.Message.objects.filter(
             id=response['data']['messages'][0]['msg_id']
-            )[0]
+        )[0]
         self.assertEqual(
             response['data']['messages'][0]['content'], message.content
         )
@@ -1114,10 +1089,12 @@ class MessagesModelTests(TestCase):
             response['data']['messages'][0]['author']['avatar'], message.author.avatar
         )
         self.assertEqual(
-            len(response['data']['messages'][0]['images']), message.messageimage_set.count()
+            len(response['data']['messages'][0]['images']
+                ), message.messageimage_set.count()
         )
         self.assertEqual(
-            len(response['data']['messages'][0]['videos']), message.messagevideo_set.count()
+            len(response['data']['messages'][0]['videos']
+                ), message.messagevideo_set.count()
         )
         self.assertEqual(
             response['data']['messages'][0]['position']['pos_x'], message.pos_x
@@ -1125,7 +1102,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(
             response['data']['messages'][0]['position']['pos_y'], message.pos_y
         )
-
 
     def test_give_a_like_to_a_message_works_successfully(self):
         """ 测试能否正确点赞"""
@@ -1146,7 +1122,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['data']['like'], message.like)
         self.assertEqual(response['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_like.all())
-
 
     def test_give_two_likes_to_a_message(self):
         """点多次赞的情况"""
@@ -1170,7 +1145,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_like.all())
 
-
     def test_give_a_dislike_to_a_message_works_successfully(self):
         """测试能否正确点踩"""
         message = models.Message.objects.filter()[0]
@@ -1190,7 +1164,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['data']['like'], message.like)
         self.assertEqual(response['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_dislike.all())
-
 
     def test_give_two_dislikes_to_a_message(self):
         """点多次踩的情况"""
@@ -1214,7 +1187,6 @@ class MessagesModelTests(TestCase):
         self.assertEqual(response['data']['dislike'], message.dislike)
         self.assertIn(user, message.who_dislike.all())
 
-
     def test_get_all_mentioned_messages_works_successfully(self):
         """测试能否正确获取被@的信息"""
         user = models.User.objects.filter()[0]
@@ -1228,9 +1200,9 @@ class MessagesModelTests(TestCase):
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertEqual(
-            len(response['data']['messages']), len(user.message_mention_user.filter())
-            )
-
+            len(response['data']['messages']), len(
+                user.message_mention_user.filter())
+        )
 
     def test_follow_suessfully(self):
         """正常关注的情况"""
@@ -1251,7 +1223,6 @@ class MessagesModelTests(TestCase):
             '/ww/users/follow/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
-
 
     def test_follow_with_existed_followship(self):
         """重复关注的情况"""
@@ -1274,7 +1245,6 @@ class MessagesModelTests(TestCase):
             '/ww/users/follow/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'existed')
-
 
     def test_follow_with_deleted_user(self):
         """用户已被删除的情况"""
@@ -1303,6 +1273,7 @@ class MessagesModelTests(TestCase):
         followed_user.deleted = 0
         user.save()
         followed_user.save()
+
 
 class CommentsModelTests(TestCase):
     """
@@ -1342,7 +1313,7 @@ class CommentsModelTests(TestCase):
             '/ww/comments/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-        self.assertGreaterEqual(response['data']['comment_id'], 1)
+        # self.assertGreaterEqual(response['data']['comment_id'], 1)
 
     def test_post_comments_works_with_deleted_id(self):
         """使用已删除的用户或者信息id发送评论"""
@@ -1401,7 +1372,7 @@ class CommentsModelTests(TestCase):
             '/ww/comments/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
-        self.assertGreaterEqual(response['data']['comment_id'], 1)
+        # self.assertGreaterEqual(response['data']['comment_id'], 1)
 
     def test_post_child_comments_works_with_deleted_id(self):
         """使用已删除的用户或者信息id发送子评论"""
@@ -1432,7 +1403,6 @@ class CommentsModelTests(TestCase):
         user.save()
         message.save()
         parent_comment.save()
-
 
     def test_get_comments_works_successfully(self):
         """用于测试获取评论是否工作正常"""
@@ -1475,15 +1445,15 @@ class CommentsModelTests(TestCase):
         )
         self.assertEqual(
             response['data']['add_date'], comment.add_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         self.assertEqual(
             response['data']['mod_date'], comment.mod_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         child_comment = models.Comment.objects.filter(
             id=response['data']['child_comments'][0]['comment_id']
-            )[0]
+        )[0]
         self.assertEqual(
             response['data']['child_comments'][0]['content'], child_comment.content
         )
@@ -1499,7 +1469,6 @@ class CommentsModelTests(TestCase):
         self.assertEqual(
             response['data']['child_comments'][0]['author']['avatar'], child_comment.author.avatar
         )
-        
 
     def test_get_child_comments_works_successfully(self):
         """用于测试获取子评论是否工作正常"""
@@ -1531,7 +1500,7 @@ class CommentsModelTests(TestCase):
         self.assertEqual(
             response['data']['like'], comment.like
         )
-        user_like = models.User.filter(
+        user_like = models.User.objects.filter(
             id=response['data']['who_like'][0]['user_id']
         )[0]
         self.assertEqual(
@@ -1542,11 +1511,11 @@ class CommentsModelTests(TestCase):
         )
         self.assertEqual(
             response['data']['add_date'], comment.add_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         self.assertEqual(
             response['data']['mod_date'], comment.mod_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
+                timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         self.assertEqual(
             response['data']['reply_to'], comment.reply_to.id
@@ -1595,7 +1564,6 @@ class CommentsModelTests(TestCase):
         self.assertEqual(response['state']['msg'], 'deleted')
         comment.deleted = 0
         comment.save()
-
 
     def test_delete_comment_works_successfully(self):
         """正常删除评论的情况"""
@@ -1827,10 +1795,10 @@ class OtherModelTests(TestCase):
         request_data = {
             'resource_url': 'media/documents/隐私政策.html'
         }
-        response = self.c.get('/ww/static_resources/', data=request_data).json()
+        response = self.c.get('/ww/static_resources/',
+                              data=request_data).json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/html')
-
 
     def test_get_latest_version_successfully(self):
         """测试获取最新版本号是否正常工作"""

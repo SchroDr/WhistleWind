@@ -281,7 +281,6 @@ class UsersView(View):
 # jhc work----------------------------------------------------------------
 
 
-
 class MessagesView(View):
     """本模块用于对消息进行增删改查"""
 
@@ -302,15 +301,15 @@ class MessagesView(View):
             pos_x = request_data['position']['pos_x']
             pos_y = request_data['position']['pos_y']
             content = request_data['content']
-            
+
             authors = models.User.objects.filter(id=author_id)
-            #如果查询用户不存在
+            # 如果查询用户不存在
             if not authors.exists():
                 result['state']['msg'] = 'wrong'
                 result['state']['description'] = 'The user does not exist'
                 result.pop('data')
                 return JsonResponse(result)
-            #如果查询用户已被删除
+            # 如果查询用户已被删除
             elif authors[0].deleted == 1:
                 result['state']['msg'] = 'deleted'
                 result['state']['description'] = 'The user has been deleted'
@@ -345,7 +344,8 @@ class MessagesView(View):
                 if 'mentioned' in request_data.keys():
                     mentions = request_data['mentioned']
                     for mention in mentions:
-                        mentioned_user = models.User.objects.filter(id = mention['user_id'])[0]
+                        mentioned_user = models.User.objects.filter(
+                            id=mention['user_id'])[0]
                         message.mention.add(mentioned_user)
                 if 'tags' in request_data.keys():
                     tags = request_data['tags']
@@ -420,13 +420,13 @@ class MessagesView(View):
             request_data = request.GET.dict()
             msg_id = request_data['msg_id']
             messages = models.Message.objects.filter(id=msg_id)
-            #如果查询信息不存在
+            # 如果查询信息不存在
             if not messages.exists():
                 result['state']['msg'] = 'wrong'
                 result['state']['description'] = 'The message does not exist'
                 result.pop('data')
                 return JsonResponse(result)
-            #如果查询信息已被删除
+            # 如果查询信息已被删除
             elif messages[0].deleted == 1:
                 result['state']['msg'] = 'deleted'
                 result['state']['description'] = 'The message has been deleted'
@@ -502,7 +502,7 @@ class MessagesView(View):
                         'user_id': mention.id
                     }
                     result['data']['mentioned'].append(mention_info)
-                
+
                 result['state']['msg'] = 'successful'
                 return JsonResponse(result)
         except Exception as e:
@@ -528,13 +528,13 @@ class MessagesView(View):
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
             messages = models.Message.objects.filter(id=msg_id)
-            #如果查询信息不存在
+            # 如果查询信息不存在
             if not messages.exists():
                 result['state']['msg'] = 'wrong'
                 result['state']['description'] = 'The message does not exist'
                 result.pop('data')
                 return JsonResponse(result)
-            #如果查询信息已被删除
+            # 如果查询信息已被删除
             elif messages[0].deleted == 1:
                 result['state']['msg'] = 'deleted'
                 result['state']['description'] = 'The message has been deleted'
@@ -566,7 +566,8 @@ class MessagesView(View):
                     message.mention.remove(*message.mention.all())
                     mentions = request_data['mentioned']
                     for mention in mentions:
-                        mentioned_user = models.User.objects.filter(id=mention['user_id'])[0]
+                        mentioned_user = models.User.objects.filter(
+                            id=mention['user_id'])[0]
                         message.mention.add(mentioned_user)
                 if 'tags' in request_data.keys():
                     message.tag.remove(*message.tag.all())
@@ -610,13 +611,13 @@ class MessagesView(View):
             request_data = demjson.decode(request.body)
             msg_id = request_data['msg_id']
             messages = models.Message.objects.filter(id=msg_id)
-            #如果查询信息不存在
+            # 如果查询信息不存在
             if not messages.exists():
                 result['state']['msg'] = 'wrong'
                 result['state']['description'] = 'The message does not exist'
                 result.pop('data')
                 return JsonResponse(result)
-            #如果查询信息已被删除
+            # 如果查询信息已被删除
             elif messages[0].deleted == 1:
                 result['state']['msg'] = 'deleted'
                 result['state']['description'] = 'The message has been deleted'
@@ -662,17 +663,23 @@ class CommentsView(View):
         # msg_id = request.POST.get("msg_id")
         # print(user_id, msg_id)
         try:
-            user = models.User.objects.filter(id=comment['user_id'])[0]
-            mess = models.Message.objects.filter(id=comment['msg_id'])[0]
-            comm = models.Comment.objects.create(
-                msg=mess,
-                content=comment['content'],
-                author=user,
-                type="parent",
-            )
-            comm.save()
-            result['state']['msg'] = 'successful'
-            result['data']['comment_id'] = comm.id
+            user = models.User.objects.filter(id=comment['user_id'])
+            if len(user) == 0:
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'Use a non-existent user or information id to send a comment'
+                result.pop('data')
+            else:
+                user = user[0]
+                mess = models.Message.objects.filter(id=comment['msg_id'])[0]
+                comm = models.Comment.objects.create(
+                    msg=mess,
+                    content=comment['content'],
+                    author=user,
+                    type="parent",
+                )
+                comm.save()
+                result['state']['msg'] = 'successful'
+                result['data']['comment_id'] = comm.id
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -694,24 +701,12 @@ class CommentsView(View):
                 },
                 "content": "",
                 "like": 0,
-                "who_like": [
-                    {
-                        # "user_id": 0,
-                        # "username": "",
-                        # "avatar": ""
-                    }
-                ],
+                "who_like": [],
                 "add_date": "",
                 "mod_date": "",
                 "reply_to": "",
                 "parent_comment_id": "",
-                "child_commes": [
-                    {
-                        # "comment_id": 0,
-                        # "content": "",
-                        # "like": "",
-                    }
-                ]
+                "child_comments": []
             },
             "state": {
                 "msg": "failed"
@@ -721,6 +716,7 @@ class CommentsView(View):
         comment_id = request.GET.get('comment_id')
         try:
             comment = models.Comment.objects.filter(id=comment_id)
+            
             if len(comment) != 0:
                 comment = comment.first()
                 if comment.deleted != 1:
@@ -731,30 +727,37 @@ class CommentsView(View):
                         comment.author.username)
                     result['data']['author']['avatar'] = str(
                         comment.author.avatar)
-                    result['data']['content'] = comment.content
+                    result['data']['content'] = str(comment.content)
                     result['data']['like'] = comment.like
-                    result['data']['add_date'] = comment.add_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                    result['data']['mod_date'] = comment.mod_date.astimezone(
-                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                    result['data']['reply_to'] = comment.reply_to
-                    result['data']['parent_comment_id'] = comment.parent_comment
+                    result['data']['add_date'] = str(comment.add_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S"))
+                    result['data']['mod_date'] = str(comment.mod_date.astimezone(
+                        timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S"))
+                    result['data']['reply_to'] = str(comment.reply_to)
+                    result['data']['parent_comment_id'] = str(
+                        comment.parent_comment)
                     if comment.type == "parent":
                         child_comment = models.Comment.objects.filter(
                             type="child", reply_to=comment_id)
                         for i in child_comment:
                             oneChild = {
                                 "comment_id": i.id,
-                                'content': i.content,
+                                'content': str(i.content),
                                 'like': i.like,
+                                "author": {
+                                    "author_id": i.author.id,
+                                    "username": str(i.author.username),
+                                    "avatar": str(i.author.avatar),
+                                }
                             }
-                            result['data']['child_commes'].append(oneChild)
+
+                            result['data']['child_comments'].append(oneChild)
                     who_like = comment.who_like.all()
                     for i in who_like:
                         oneLike = {
                             "user_id": i.id,
-                            "username": i.username,
-                            "avatar": i.avatar,
+                            "username": str(i.username),
+                            "avatar": str(i.avatar),
                         }
                         result['data']['who_like'].append(oneLike)
                     result['state']['msg'] = 'successful'
@@ -769,7 +772,10 @@ class CommentsView(View):
             result.pop('data')
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
+        # print(result)
         result = demjson.decode(str(result))
+        # result = json.dumps(result)
+        print(result)
         # result = json.
         return JsonResponse(result)
 
@@ -807,6 +813,7 @@ class CommentsView(View):
             print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
 
+
 def commentsChildComments(self, request):
     # TO DO 接收子评论
     result = {
@@ -825,19 +832,25 @@ def commentsChildComments(self, request):
     #   "parent_comment_id": "",
     #   "msg_id": ""
     try:
-        user = models.User.objects.filter(id=comment['user_id'])[0]
-        mess = models.Message.objects.filter(id=comment['msg_id'])[0]
-        comm = models.Comment.objects.create(
-            msg=mess,
-            content=comment['content'],
-            author=user,
-            type="child",
-            reply_to=comment['reply_to'],
-            parent_comment=comment['parent_comment_id']
-        )
-        comm.save()
-        result['state']['msg'] = 'successful'
-        result['data']['comment_id'] = comm.id
+        user = models.User.objects.filter(id=comment['user_id'])
+        if len(user) == 0:
+            result['state']['msg'] = 'wrong'
+            result['state']['description'] = 'Use a non-existent user or information id to send a comment'
+            result.pop('data')
+        else:
+            user = user[0]
+            mess = models.Message.objects.filter(id=comment['msg_id'])[0]
+            comm = models.Comment.objects.create(
+                msg=mess,
+                content=comment['content'],
+                author=user,
+                type="child",
+                reply_to=comment['reply_to'],
+                parent_comment=comment['parent_comment_id']
+            )
+            comm.save()
+            result['state']['msg'] = 'successful'
+            result['data']['comment_id'] = comm.id
     except Exception as e:
         result['state']['msg'] = 'failed'
         result['state']['description'] = str(repr(e))
@@ -898,6 +911,7 @@ class ImagesView(View):
             print('\nrepr(e):\t', repr(e))
             print('traceback.print_exc():', traceback.print_exc())
             return JsonResponse(result)
+
 
 class VideosView(View):
     """本模块用于上传下载视频"""
@@ -1116,13 +1130,13 @@ def messagesSet(request):
             # result['data']['messages'].append(message_info)
             for image in message.messageimage_set.all():
                 image_info = {
-                     "image_url": image.img
-                 }
+                    "image_url": image.img
+                }
                 message_info['images'].append(image_info)
             for video in message.messagevideo_set.all():
                 video_info = {
-                     "video_url": video.video
-                 }
+                    "video_url": video.video
+                }
                 message_info['videos'].append(video_info)
             result['data']['messages'].append(message_info)
         result['state']['msg'] = 'successful'
@@ -1155,25 +1169,25 @@ def messagesLike(request):
         user_id = request_data['user_id']
         users = models.User.objects.filter(id=user_id)
         messages = models.Message.objects.filter(id=msg_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询消息不存在
+        # 如果查询消息不存在
         elif not messages.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The message does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询消息已被删除
+        # 如果查询消息已被删除
         elif messages[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The message has been deleted'
@@ -1222,25 +1236,25 @@ def messagesDislike(request):
         user_id = request_data['user_id']
         users = models.User.objects.filter(id=user_id)
         messages = models.Message.objects.filter(id=msg_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询消息不存在
+        # 如果查询消息不存在
         elif not messages.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The message does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询消息已被删除
+        # 如果查询消息已被删除
         elif messages[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The message has been deleted'
@@ -1289,13 +1303,13 @@ def messagesMentioned(request):
         count_limit = int(request_data['count_limit'])
         user_id = request_data['user_id']
         users = models.User.objects.filter(id=user_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
@@ -1307,21 +1321,24 @@ def messagesMentioned(request):
             if time_limit == -1 and count_limit == -1:
                 messages = user.message_mention_user.filter().order_by('-add_date')
             elif time_limit == -1 and count_limit >= 0:
-                messages = user.message_mention_user.filter().order_by('-add_date')[0: count_limit]
+                messages = user.message_mention_user.filter().order_by(
+                    '-add_date')[0: count_limit]
             elif time_limit >= 0 and count_limit == -1:
-                messages = user.message_mention_user.filter(add_date__gt=start_time).order_by('-add_date')
+                messages = user.message_mention_user.filter(
+                    add_date__gt=start_time).order_by('-add_date')
             else:
-                messages = user.message_mention_user.filter(add_date__gt=start_time).order_by('-add_date')[0: count_limit]
+                messages = user.message_mention_user.filter(
+                    add_date__gt=start_time).order_by('-add_date')[0: count_limit]
             for message in messages:
                 message_info = {
-                "msg_id": message.id,
-                "title": message.title,
-                "content": message.content,
-                "author": {
-                    "author_id": message.author.id,
-                    "username": message.author.username,
-                    "avatar": message.author.avatar
-                    }               
+                    "msg_id": message.id,
+                    "title": message.title,
+                    "content": message.content,
+                    "author": {
+                        "author_id": message.author.id,
+                        "username": message.author.username,
+                        "avatar": message.author.avatar
+                    }
                 }
                 result['data']['messages'].append(message_info)
             result['state']['msg'] = 'successful'
@@ -1353,25 +1370,25 @@ def commentsLike(request):
         user_id = request_data['user_id']
         users = models.User.objects.filter(id=user_id)
         comments = models.Comment.objects.filter(id=comment_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询评论不存在
+        # 如果查询评论不存在
         elif not comments.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The comment does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询评论已被删除
+        # 如果查询评论已被删除
         elif comments[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The comment has been deleted'
@@ -1433,13 +1450,13 @@ def usersDeveces(request):
         phone_model = request_data['phone_model']
         imei = request_data['imei']
         users = models.User.objects.filter(id=user_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             result.pop('data')
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
@@ -1483,12 +1500,12 @@ def usersFollow(request):
         followed_user_id = request_data['followed_user_id']
         users = models.User.objects.filter(id=user_id)
         followed_users = models.User.objects.filter(id=followed_user_id)
-        #如果查询用户不存在
+        # 如果查询用户不存在
         if not users.exists():
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
@@ -1497,7 +1514,7 @@ def usersFollow(request):
             result['state']['msg'] = 'wrong'
             result['state']['description'] = 'The user does not exist'
             return JsonResponse(result)
-        #如果查询用户已被删除
+        # 如果查询用户已被删除
         elif followed_users[0].deleted == 1:
             result['state']['msg'] = 'deleted'
             result['state']['description'] = 'The user has been deleted'
@@ -1524,6 +1541,7 @@ def usersFollow(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
 
 def version(request):
     result = {
