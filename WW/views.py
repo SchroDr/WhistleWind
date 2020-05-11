@@ -1105,6 +1105,9 @@ def messagesSet(request):
         for i, message in enumerate(messages):
             if i >= number:
                 break
+            if message.deleted == 1:
+                number += 1
+                continue
             message_info = {
                 "msg_id": message.id,
                 "title": message.title,
@@ -1550,13 +1553,17 @@ def version(request):
             "description": ""
         },
         "data": {
-            "latest_version": ""
+            "latest_version": "",
+            "download_link": "",
+            "description": ""
         }
     }
     try:
         latest_version = models.Version.objects.filter(
         ).order_by('-date')[0]
         result['data']['latest_version'] = latest_version.version
+        result['data']['download_link'] = latest_version.download_link
+        result['data']['description'] = latest_version.description
         result['state']['msg'] = 'successful'
         return JsonResponse(result)
     except Exception as e:
