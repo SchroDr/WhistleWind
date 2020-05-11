@@ -243,3 +243,5 @@ class Version(models.Model):
     id = models.AutoField("版本号唯一标识符", primary_key=True)
     version = models.CharField("版本号", max_length=62, null=False)
     date = models.DateTimeField("该版本号发布的日期", default=timezone.now)
+    download_link = models.CharField("下载地址", max_length=242, default='media/documents/0.1.apk')
+    description = models.TextField("版本描述", default='最新的版本')
