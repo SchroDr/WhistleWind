@@ -1370,7 +1370,7 @@ class CommentsModelTests(TestCase):
             'reply_to': 99999
         }
         response = self.c.post(
-            '/ww/comments/', data=request_data, content_type='application/json').json()
+            '/ww/comments/child_comments/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'wrong')
         # self.assertGreaterEqual(response['data']['comment_id'], 1)
@@ -1522,7 +1522,8 @@ class CommentsModelTests(TestCase):
             int(response['data']['reply_to']), comment.reply_to.id
         )
         self.assertEqual(
-            int(response['data']['parent_comment_id']), comment.parent_comment.id
+            int(response['data']['parent_comment_id']
+                ), comment.parent_comment.id
         )
 
     def test_get_comments_works_with_wrong_id(self):

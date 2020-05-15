@@ -716,7 +716,6 @@ class CommentsView(View):
         comment_id = request.GET.get('comment_id')
         try:
             comment = models.Comment.objects.filter(id=comment_id)
-            
             if len(comment) != 0:
                 comment = comment.first()
                 if comment.deleted != 1:
@@ -774,9 +773,6 @@ class CommentsView(View):
             print('traceback.print_exc():', traceback.print_exc())
         # print(result)
         result = demjson.decode(str(result))
-        # result = json.dumps(result)
-        print(result)
-        # result = json.
         return JsonResponse(result)
 
     def put(self, request):
@@ -814,7 +810,7 @@ class CommentsView(View):
         return JsonResponse(result)
 
 
-def commentsChildComments(self, request):
+def commentsChildComments(request):
     # TO DO 接收子评论
     result = {
         "state": {
@@ -857,6 +853,7 @@ def commentsChildComments(self, request):
         result.pop('data')
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
+    return JsonResponse(result)
 # jhc-----------------------------------
 
 
