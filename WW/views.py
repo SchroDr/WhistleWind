@@ -473,6 +473,7 @@ class MessagesView(View):
                         "comment_id": comment.id,
                         "content": comment.content,
                         'like': comment.like,
+                        "child_comments_number": comment.comment_parent_comment_set.count(),
                         'author': {
                             'author_id': comment.author.id,
                             'username': comment.author.username,
