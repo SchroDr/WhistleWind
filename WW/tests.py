@@ -64,6 +64,7 @@ def createTestDatabase():
         for i in range(5):
             user = random.choice(users)
             comment = models.Comment.objects.create(
+                type='parent',
                 msg=message,
                 author=user,
                 content="Ruaaaaaaaa"
