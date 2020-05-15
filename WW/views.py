@@ -792,15 +792,21 @@ class CommentsView(View):
         }
         delete = demjson.decode(request.body)
         try:
-            comm = models.Comment.objects.get(id=delete['comment_id'])
-            if comm.deleted != 1:
-                comm.deleted = 1
-                comm.save()
-                result['state']['msg'] = 'successful'
-                result['data']['comment_id'] = comm.id
+            comm = models.Comment.objects.filter(id=delete['comment_id'])
+            if len(comm) == 0:
+                result['state']['msg'] = 'wrong'
+                result['state']['description'] = 'Use a non-existent user or information id to send a comment'
+                result.pop('data')
             else:
-                result['state']['msg'] = 'deleted'
-                result['state']['description'] = "is Deleted"
+                comm = comm[0]
+                if comm.deleted != 1:
+                    comm.deleted = 1
+                    comm.save()
+                    result['state']['msg'] = 'successful'
+                    result['data']['comment_id'] = comm.id
+                else:
+                    result['state']['msg'] = 'deleted'
+                    result['state']['description'] = "is Deleted"
         except Exception as e:
             result['state']['msg'] = 'failed'
             result['state']['description'] = str(repr(e))
@@ -841,8 +847,9 @@ def commentsChildComments(request):
                 content=comment['content'],
                 author=user,
                 type="child",
-                reply_to=comment['reply_to'],
-                parent_comment=comment['parent_comment_id']
+                reply_to=models.User.objects.filter(id=comment['reply_to'])[0],
+                parent_comment=models.Comment.objects.filter(
+                    id=comment['parent_comment_id'])[0],
             )
             comm.save()
             result['state']['msg'] = 'successful'
