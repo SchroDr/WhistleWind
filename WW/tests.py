@@ -1394,7 +1394,7 @@ class CommentsModelTests(TestCase):
         message.save()
         parent_comment.save()
         response = self.c.post(
-            '/ww/comments/', data=request_data, content_type='application/json').json()
+            '/ww/comments/child_comments/', data=request_data, content_type='application/json').json()
         #self.assertEqual(response.status_code, 200)
         self.assertEqual(response['state']['msg'], 'successful')
         self.assertGreaterEqual(response['data']['comment_id'], 1)
