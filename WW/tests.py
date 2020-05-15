@@ -98,14 +98,15 @@ def createTestDatabase():
             comment.like += 1
             comment.who_like.add(user)
             comment.save()
-            child_comment = models.Comment.objects.create(
-                msg=comment.msg,
-                author=user,
-                type='child',
-                reply_to=comment.author,
-                parent_comment=comment
-            )
-            child_comment.save()
+        child_comment = models.Comment.objects.create(
+            msg=comment.msg,
+            author=user,
+            type='child',
+            reply_to=comment.author,
+            parent_comment=comment
+        )
+        child_comment.who_like.add(user)
+        child_comment.save()
 
     # 为每个用户增加9个关注
     for user in users:
@@ -1518,10 +1519,10 @@ class CommentsModelTests(TestCase):
                 timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
         )
         self.assertEqual(
-            response['data']['reply_to'], comment.reply_to.id
+            int(response['data']['reply_to']), comment.reply_to.id
         )
         self.assertEqual(
-            response['data']['parent_comment_id'], comment.parent_comment.id
+            int(response['data']['parent_comment_id']), comment.parent_comment.id
         )
 
     def test_get_comments_works_with_wrong_id(self):
