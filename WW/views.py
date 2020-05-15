@@ -737,7 +737,7 @@ class CommentsView(View):
                         comment.parent_comment)
                     if comment.type == "parent":
                         child_comment = models.Comment.objects.filter(
-                            type="child", reply_to=comment_id)
+                            type="child", parent_comment=comment_id)
                         for i in child_comment:
                             oneChild = {
                                 "comment_id": i.id,
