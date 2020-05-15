@@ -468,7 +468,7 @@ class MessagesView(View):
                     timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
                 result['data']['mod_date'] = message.mod_date.astimezone(
                     timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S")
-                for i, comment in enumerate(message.comment_set.all()):
+                for i, comment in enumerate(message.comment_set.filter(type='parent')):
                     comment_info = {
                         "comment_id": comment.id,
                         "content": comment.content,

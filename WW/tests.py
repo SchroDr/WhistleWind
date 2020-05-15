@@ -1712,9 +1712,9 @@ class ImagesModelTests(TestCase):
             'image_url': 'media/pic/rua.jpg'
         }
         response = self.c.get(
-            '/ww/images/', data=request_data).json()
+            '/ww/images/', data=request_data)
         #self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'image/jpeg')
+        self.assertEqual(response.get('Content-Type'), 'image/jpeg')
 
 
 class VideosModelTests(TestCase):
@@ -1745,9 +1745,9 @@ class VideosModelTests(TestCase):
             'video_url': 'media/video/test.mp4'
         }
         response = self.c.get(
-            '/ww/videos/', data=request_data).json()
+            '/ww/videos/', data=request_data)
         #self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'video/mp4')
+        self.assertEqual(response.get('Content-Type'), 'video/mp4')
 
 
 class OtherModelTests(TestCase):
@@ -1799,9 +1799,9 @@ class OtherModelTests(TestCase):
             'resource_url': 'media/documents/隐私政策.html'
         }
         response = self.c.get('/ww/static_resources/',
-                              data=request_data).json()
+                              data=request_data)
         #self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'text/html')
+        self.assertEqual(response.get('Content-Type'), 'text/html')
 
     def test_get_latest_version_successfully(self):
         """测试获取最新版本号是否正常工作"""
