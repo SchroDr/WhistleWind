@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'^videos/$', views.VideosView.as_view(), name='videos'),
     url(r'^static_resources/$', views.staticResources, name='staticResources'),
     url(r'^version/$', views.version, name='version'),
+
+    url(r'^home/$', views.home, name='home_page'),
 ]

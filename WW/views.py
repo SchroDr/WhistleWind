@@ -1578,3 +1578,15 @@ def version(request):
         print('\nrepr(e):\t', repr(e))
         print('traceback.print_exc():', traceback.print_exc())
         return JsonResponse(result)
+
+
+def home(request):
+    if request.method == 'POST':
+        latest_version = models.Version.objects.filter(
+        ).order_by('-date')[0]
+        file = open(latest_version.download_link, 'rb')
+        response = HttpResponse(file)
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment;filename="shunhu.apk"'
+        return response
+    return render(request, 'index.html')
