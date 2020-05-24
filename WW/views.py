@@ -7,7 +7,7 @@
     接口的具体功能见
     http://rap2.taobao.org/organization/repository/editor?id=224734&mod=313234
 """
-
+from django.shortcuts import render
 import exrex
 import json
 import os
@@ -16,6 +16,7 @@ import traceback
 from datetime import datetime, timedelta, timezone
 from . import models, sendEmail
 from django.views import View
+from django.http import HttpResponse
 from django.http import JsonResponse, FileResponse, QueryDict
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.core.cache import cache

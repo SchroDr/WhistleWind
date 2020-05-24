@@ -19,10 +19,11 @@ urlpatterns = [
 
     url(r'^comments/$', views.CommentsView.as_view(), name='comments'),
     url(r'^comments/like/$', views.commentsLike, name='commentsLike'),
-    url(r'^comments/child_comments/$', views.commentsChildComments, name='commentsChildComments'),
+    url(r'^comments/child_comments/$',
+        views.commentsChildComments, name='commentsChildComments'),
 
     url(r'^images/$', views.ImagesView.as_view(), name='images'),
     url(r'^videos/$', views.VideosView.as_view(), name='videos'),
     url(r'^static_resources/$', views.staticResources, name='staticResources'),
-    url(r'^version/$', views.version, name='version')
+    url(r'^version/$', views.version, name='version'),
 ]
