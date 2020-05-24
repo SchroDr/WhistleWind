@@ -28,4 +28,5 @@ urlpatterns = [
     url(r'^version/$', views.version, name='version'),
 
     url(r'^home/$', views.home, name='home_page'),
+    url(r'^$', views.home, name='home_page'),
 ]
