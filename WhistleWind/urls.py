@@ -19,5 +19,6 @@ from django.conf.urls import url
 
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url(r'ww/', include(('WW.urls', 'WW'), namespace = 'WW'))
+    url(r'ww/', include(('WW.urls', 'WW'), namespace = 'WW')),
+    url('', include(('WW.urls', 'WW'), namespace = 'WW')),
 ]
