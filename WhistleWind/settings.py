@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'WW',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,10 @@ STATICFILES_DIRS = (
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname('__file__')))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 MEDIA_URL = '/media/'
+
+
+CRONJOBS = [
+    ('*/720  * * * *', 'WW.monitoring.start','>>/monitoring.log')
+    #每隔12小时启动一次
+]
+

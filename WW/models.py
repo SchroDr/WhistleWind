@@ -17,12 +17,16 @@ class Image(models.Model):
                             default="universal", max_length=31)
     upload_date = models.DateTimeField('保存日期', default=timezone.now)
     size = models.FloatField("图片大小，单位为Mb", null=True)
+    tested = models.BooleanField("是否已检测", default=False)
+    conclusionType = models.CharField("检测结果", null=True, max_length=10)
 
 class Video(models.Model):
     id = models.AutoField("图片唯一标识符", primary_key=True)
     video = models.FileField("存储视频", upload_to="video", null=False)
     upload_date = models.DateTimeField('保存日期', default=timezone.now)
     size = models.FloatField("图片大小，单位为Mb", null=True)
+    tested = models.BooleanField("是否已检测", default=False)
+    conclusionType = models.CharField("检测结果", null=True, max_length=10)
 
 
 class Device(models.Model):
@@ -99,6 +103,8 @@ class Message(models.Model):
     add_date = models.DateTimeField("发布日期", default=timezone.now)
     mod_date = models.DateTimeField("最后修改日期", auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)
+    tested = models.BooleanField("是否已检测", default=False)
+    conclusionType = models.CharField("检测结果", null=True, max_length=10)
 
     class Meta:
         verbose_name = ("Message")
@@ -143,6 +149,8 @@ class Comment(models.Model):
     add_date = models.DateTimeField('保存日期', default=timezone.now)
     mod_date = models.DateTimeField('最后修改日期', auto_now=True)
     deleted = models.IntegerField("是否被删除", default=0)
+    tested = models.BooleanField("是否已检测", default=False)
+    conclusionType = models.CharField("检测结果", null=True, max_length=10)
 
     class Meta:
         verbose_name = ("Comment")

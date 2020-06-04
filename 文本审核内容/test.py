@@ -24,7 +24,8 @@ def AipContentCensoR(strContent):
     data = {'text': str(strContent)}
     url = 'https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined'
     res = client.post(url=url, data=data)
-    return res  # dict
+    return res['conclusionType']
+    # return res  # dict
 
 
 def AipImageCensoR(filePath):
@@ -32,4 +33,5 @@ def AipImageCensoR(filePath):
     result = client.imageCensorUserDefined(
         get_file_content(filePath))
     # result = client.imageCensorUserDefined('http://www.example.com/image.jpg')
-    print(result)
+    #print(result)
+    return result['conclusionType']
