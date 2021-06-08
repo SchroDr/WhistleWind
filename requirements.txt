@@ -1,5 +1,5 @@
 exrex==0.10.5
 demjson==2.2.4
 aliyun-python-sdk-core==2.13.15
-Pillow==7.0.0
+Pillow==8.2.0
 mysqlclient==1.3.13
